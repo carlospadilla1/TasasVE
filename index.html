@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="es-VE">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Tasas Venezuela · Dólar BCV y P2P en vivo</title>
+  <meta name="description" content="Calculadora y tasas de cambio del dólar en Venezuela (BCV y Binance P2P) en vivo. PWA instalable." />
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#050505" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Tasas VE" />
+  <link rel="icon" href="icons/favicon.svg" type="image/svg+xml" />
+
+  <!-- Tipografía -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" />
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            mono: ['"JetBrains Mono"', '"Roboto Mono"', 'ui-monospace', 'monospace'],
+          },
+        },
+      },
+    };
+  </script>
+
+  <style>
+    /* pb-safe: respeta zonas seguras (iPhone notch/home bar) */
+    .pb-safe { padding-bottom: max(1.5rem, env(safe-area-inset-bottom)); }
+
+    /* Input numérico limpio, sin controles nativos */
+    input[type='number']::-webkit-outer-spin-button,
+    input[type='number']::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    input[type='number'] { -moz-appearance: textfield; appearance: textfield; }
+
+    /* Foco accesible coherente con el acento esmeralda */
+    :focus-visible { outline: 2px solid #34d399; outline-offset: 2px; }
+
+    /* ===== Gradientes dinámicos de fondo: orbes verdes flotando ===== */
+    @keyframes orb-float {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      33%      { transform: translate(7%, -9%) scale(1.08); }
+      66%      { transform: translate(-6%, 7%) scale(0.94); }
+    }
+    .orb { animation: orb-float 14s ease-in-out infinite; }
+    .orb-b { animation-duration: 19s; animation-delay: -7s; }
+    .orb-c { animation-duration: 24s; animation-delay: -13s; }
+
+    /* ===== Aparición escalonada: fade-in-up ===== */
+    @keyframes fade-in-up {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .fade-up { animation: fade-in-up .65s cubic-bezier(.21,1.02,.73,1) both; }
+
+    /* Entrada suave del banner de instalación */
+    @keyframes banner-in {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .banner-in { animation: banner-in .45s cubic-bezier(.21,1.02,.73,1) both; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .orb, .fade-up { animation: none; }
+      * { transition-duration: 0.01ms !important; }
+    }
+  </style>
+</head>
+
+<body class="min-h-dvh bg-black font-sans text-white antialiased">
+
+  <!-- ===== Fondo: orbes verdes dinámicos ===== -->
+  <div aria-hidden="true" class="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+    <div class="orb orb-a absolute -top-32 -left-24 h-96 w-96 rounded-full bg-emerald-600 opacity-30 blur-[120px]"></div>
+    <div class="orb orb-b absolute top-1/3 -right-28 h-[28rem] w-[28rem] rounded-full bg-green-500 opacity-20 blur-[120px]"></div>
+    <div class="orb orb-c absolute -bottom-40 left-1/4 h-96 w-96 rounded-full bg-emerald-500 opacity-20 blur-[120px]"></div>
+  </div>
+
+  <!-- Ranuras de datos que el JS actualiza pero la UI ya no muestra (lógica intacta) -->
+  <div class="hidden" aria-hidden="true">
+    <span id="live-badge"></span>
+    <p id="bcv-since"></p>
+    <p id="bin-meta"></p>
+    <label id="amount-label" for="amount"></label>
+  </div>
+
+  <main class="mx-auto w-full max-w-md px-4 pb-safe pt-[max(2.5rem,env(safe-area-inset-top))] sm:pt-16">
+
+    <!-- ===== Tarjeta: BCV oficial ===== -->
+    <section aria-label="Tasa BCV"
+      class="fade-up rounded-3xl border border-white/10 bg-white/5 p-5 backdrop-blur-2xl"
+      style="animation-delay: .05s">
+      <div class="flex items-center justify-between gap-3">
+        <div class="flex min-w-0 items-center gap-3">
+          <span class="grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-emerald-400/20 bg-emerald-500/10 text-[10px] font-extrabold tracking-wide text-emerald-400 select-none">BCV</span>
+          <h2 class="text-sm font-medium text-white/60">BCV oficial</h2>
+        </div>
+        <p id="bcv-price" class="animate-pulse shrink-0 font-mono text-2xl font-bold tabular-nums text-white transition-all duration-300 ease-in-out sm:text-3xl">Bs. —</p>
+      </div>
+    </section>
+
+    <!-- ===== Tarjeta: Binance P2P ===== -->
+    <section aria-label="Tasa Binance P2P"
+      class="fade-up mt-3 rounded-3xl border border-white/10 bg-white/5 p-5 backdrop-blur-2xl"
+      style="animation-delay: .15s">
+      <div class="flex items-center justify-between gap-3">
+        <div class="flex min-w-0 items-center gap-3">
+          <span class="grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-emerald-400/20 bg-emerald-500/10 text-[10px] font-extrabold tracking-wide text-emerald-400 select-none">BN</span>
+          <h2 class="text-sm font-medium text-white/60">Binance P2P</h2>
+        </div>
+        <p id="bin-price" class="animate-pulse shrink-0 font-mono text-2xl font-bold tabular-nums text-white transition-all duration-300 ease-in-out sm:text-3xl">Bs. —</p>
+      </div>
+    </section>
+
+    <!-- ===== Calculadora (entradas apiladas estilo exchange) ===== -->
+    <section aria-label="Calculadora de divisas" class="fade-up relative mt-14 sm:mt-16" style="animation-delay: .25s">
+
+      <!-- Bloque superior: monto de origen -->
+      <div class="rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur-2xl">
+        <div class="flex items-center justify-between gap-4">
+          <span id="currency-tag" class="shrink-0 text-sm font-semibold uppercase tracking-widest text-white/50">USD</span>
+          <input id="amount" type="number" inputmode="decimal" min="0" step="any" value="1"
+            placeholder="0,00"
+            class="w-full min-w-0 bg-transparent text-right font-mono text-5xl font-semibold text-white outline-none transition-all duration-300 ease-in-out placeholder:text-white/20" />
+        </div>
+      </div>
+
+      <!-- Botón flotante de intercambio entre los dos rectángulos -->
+      <div class="relative z-10 my-3 flex items-center justify-center">
+        <button id="swap-btn" type="button" aria-label="Invertir dirección de conversión"
+          class="grid h-12 w-12 shrink-0 place-items-center rounded-full border border-emerald-400/30 bg-emerald-500/20 p-2 text-emerald-300 shadow-[0_0_28px_rgba(16,185,129,0.35)] backdrop-blur-xl transition-all duration-300 ease-in-out hover:bg-emerald-500/30 active:rotate-180 active:scale-95">
+          <svg id="swap-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="m3 16 4 4 4-4"/><path d="M7 20V4"/><path d="m21 8-4-4-4 4"/><path d="M17 4v16"/>
+          </svg>
+          <span id="direction-label" class="sr-only">USD → VES</span>
+        </button>
+      </div>
+
+      <!-- Bloque inferior: resultado destino -->
+      <div class="rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur-2xl">
+        <p id="result-label" class="text-sm text-white/50">Recibes en VES</p>
+        <p id="result" class="mt-1 break-words text-right font-mono text-4xl font-bold tabular-nums text-white transition-all duration-300 ease-in-out sm:text-5xl">Bs. —</p>
+      </div>
+
+      <!-- Selector de tasa: segmented control -->
+      <fieldset class="mt-4">
+        <legend class="sr-only">Tasa a utilizar</legend>
+        <div class="grid grid-cols-2 gap-1 rounded-full border border-white/10 bg-white/5 p-1 backdrop-blur-2xl" role="radiogroup" aria-label="Seleccionar tasa">
+          <label>
+            <input type="radio" name="rate" value="bcv" class="peer sr-only" checked />
+            <span class="flex h-11 cursor-pointer items-center justify-center rounded-full text-sm font-semibold text-white/60 transition-all duration-300 ease-in-out hover:text-white peer-checked:bg-emerald-500 peer-checked:text-black peer-checked:shadow-[0_0_20px_rgba(16,185,129,0.4)] peer-focus-visible:ring-2 peer-focus-visible:ring-emerald-400/60">
+              BCV
+            </span>
+          </label>
+          <label>
+            <input type="radio" name="rate" value="binance" class="peer sr-only" />
+            <span class="flex h-11 cursor-pointer items-center justify-center rounded-full text-sm font-semibold text-white/60 transition-all duration-300 ease-in-out hover:text-white peer-checked:bg-emerald-500 peer-checked:text-black peer-checked:shadow-[0_0_20px_rgba(16,185,129,0.4)] peer-focus-visible:ring-2 peer-focus-visible:ring-emerald-400/60">
+              Binance
+            </span>
+          </label>
+        </div>
+      </fieldset>
+
+      <!-- Pie de estado: tasa activa / conexión (discreto) -->
+      <p id="result-detail" class="mx-auto mt-3 max-w-[18rem] truncate text-center font-mono text-[11px] text-white/30 transition-all duration-300">Cargando tasas en vivo…</p>
+    </section>
+  </main>
+
+  <!-- ===== Banner de instalación PWA ===== -->
+  <div id="install-banner" hidden
+    class="fixed inset-x-0 bottom-0 z-50 px-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+    <div class="banner-in mx-auto flex max-w-md items-center gap-3 rounded-2xl border border-white/10 bg-[#0b0f0e]/90 p-4 shadow-2xl backdrop-blur-2xl">
+      <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-emerald-500 text-base font-black text-black select-none" aria-hidden="true">Bs</span>
+      <div class="min-w-0 flex-1">
+        <p class="text-sm font-semibold text-white">Instalar Tasas Venezuela</p>
+        <p id="install-sub" class="text-xs text-white/50">Acceso directo desde tu pantalla de inicio.</p>
+      </div>
+      <button id="install-btn" type="button"
+        class="h-10 shrink-0 rounded-xl bg-emerald-500 px-4 text-sm font-bold text-black transition-colors hover:bg-emerald-400 active:scale-95">
+        Instalar
+      </button>
+      <button id="install-dismiss" type="button" aria-label="Cerrar"
+        class="grid h-8 w-8 shrink-0 place-items-center rounded-full text-white/50 transition-colors hover:bg-white/10 hover:text-white">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- ==================== Lógica (Vanilla JS) — INTACTA ==================== -->
+  <script>
+  (() => {
+    'use strict';
+
+    /* ══════════════════════════════════════════════════════════════
+     * ⚙️ CONFIGURACIÓN DE LA API — EDITA AQUÍ
+     * --------------------------------------------------------------
+    * PROXY_URL → Proxy serverless de Netlify o proxy local de server.js.
+     * ══════════════════════════════════════════════════════════════ */
+    const PROXY_URL = '/.netlify/functions/rates';
+    const LOCAL_PROXY_URL = './api/rates';
+    // Último respaldo (solo lectura): puente CORS público que lee las tasas EN VIVO
+    // publicadas en cotizave.com — los mismos valores que entrega el endpoint.
+    const BRIDGE_URL = 'https://r.jina.ai/https://cotizave.com';
+    const REFRESH_MS = 5 * 60 * 1000; // refresco automático cada 5 min
+
+    /* ---------- Tasas VIVAS (null = sin datos aún; nada quemado) ---------- */
+    const RATES = {
+      bcv: { value: null, label: 'BCV' },
+      binance: { value: null, label: 'Binance' },
+    };
+
+    const state = { direction: 'usd-ves', rate: 'bcv' };
+
+    const $ = (sel) => document.querySelector(sel);
+    const els = {
+      amount: $('#amount'),
+      swapBtn: $('#swap-btn'),
+      swapLabel: $('#direction-label'),
+      swapIcon: $('#swap-icon'),
+      amountLabel: $('#amount-label'),
+      currencyTag: $('#currency-tag'),
+      result: $('#result'),
+      resultLabel: $('#result-label'),
+      resultDetail: $('#result-detail'),
+      rateInputs: () => document.querySelectorAll('input[name="rate"]'),
+      liveBadge: $('#live-badge'),
+      bcvPrice: $('#bcv-price'),
+      bcvSince: $('#bcv-since'),
+      binPrice: $('#bin-price'),
+      binMeta: $('#bin-meta'),
+    };
+
+    /* ---------- Formato venezolano estricto: 3.650,00 ---------- */
+    const fmt = (n) =>
+      new Intl.NumberFormat('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
+
+    const TZ = 'America/Caracas';
+
+    // "jueves 17 de septiembre" (sin coma tras el día)
+    const fmtSince = (d) =>
+      new Intl.DateTimeFormat('es-VE', { weekday: 'long', day: 'numeric', month: 'long', timeZone: TZ })
+        .format(d).replace(/,\s*/, ' ');
+
+    // "17 sep" (determinista entre navegadores)
+    const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+    const fmtShortDate = (d) =>
+      `${new Intl.DateTimeFormat('es-VE', { day: 'numeric', timeZone: TZ }).format(d)} ${
+        MESES[Number(d.toLocaleString('en-US', { month: 'numeric', timeZone: TZ })) - 1]
+      }`;
+
+    // "15:07"
+    const fmtTime = (d) =>
+      new Intl.DateTimeFormat('es-VE', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: TZ }).format(d);
+
+    /* ---------- Cálculo reactivo ---------- */
+    function compute() {
+      const amount = parseFloat(els.amount.value);
+      const rate = RATES[state.rate].value;
+      const usdToVes = state.direction === 'usd-ves';
+
+      // Sin datos vivos todavía: nunca se calcula con valores por defecto.
+      if (!Number.isFinite(rate)) {
+        els.result.textContent = usdToVes ? 'Bs. —' : '$ —';
+        els.resultLabel.textContent = usdToVes ? 'Recibes en VES' : 'Recibes en USD';
+        els.resultDetail.textContent = 'Cargando tasas en vivo…';
+        return;
+      }
+
+      if (!Number.isFinite(amount) || amount < 0) {
+        els.result.textContent = usdToVes ? 'Bs. —' : '$ —';
+        els.resultLabel.textContent = usdToVes ? 'Recibes en VES' : 'Recibes en USD';
+        els.resultDetail.textContent = 'Introduce un monto válido';
+        return;
+      }
+
+      const out = usdToVes ? amount * rate : amount / rate;
+      els.result.textContent = usdToVes ? `Bs. ${fmt(out)}` : `$ ${fmt(out)}`;
+      els.resultLabel.textContent = usdToVes ? 'Recibes en VES' : 'Recibes en USD';
+      els.resultDetail.textContent =
+        `${fmt(amount)} ${usdToVes ? 'USD' : 'VES'} ${usdToVes ? '×' : '÷'} ${fmt(rate)} (${RATES[state.rate].label})`;
+    }
+
+    /* ---------- Dirección USD → VES / VES → USD ---------- */
+    function setDirection(dir) {
+      state.direction = dir;
+      const usdToVes = dir === 'usd-ves';
+
+      els.swapLabel.textContent = usdToVes ? 'USD → VES' : 'VES → USD';
+      els.amountLabel.textContent = usdToVes ? 'Monto en USD' : 'Monto en VES';
+      els.currencyTag.textContent = usdToVes ? 'USD' : 'VES';
+
+      // Espejo del icono cuando la dirección se invierte (↓↑ ⇄ ↑↓)
+      els.swapIcon.style.transform = usdToVes ? '' : 'scaleX(-1)';
+
+      compute();
+    }
+
+    els.swapBtn.addEventListener('click', () =>
+      setDirection(state.direction === 'usd-ves' ? 'ves-usd' : 'usd-ves')
+    );
+
+    /* ---------- Eventos reactivos (sin recargar) ---------- */
+    els.amount.addEventListener('input', compute);
+    els.rateInputs().forEach((r) => r.addEventListener('change', (e) => {
+      state.rate = e.target.value;
+      compute();
+    }));
+
+    /* ---------- PWA: beforeinstallprompt ---------- */
+    const IS_IOS = /iphone|ipad|ipod/i.test(navigator.userAgent) ||
+      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    const IS_STANDALONE =
+      window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+
+    const banner = $('#install-banner');
+    const installBtn = $('#install-btn');
+    let deferredPrompt = null;
+
+    function showBanner(iosMode = false) {
+      banner.hidden = false;
+      if (iosMode) {
+        $('#install-sub').innerHTML =
+          'En iPhone: pulsa <b class="text-emerald-300">Compartir</b> y luego «Añadir a la pantalla de inicio».';
+        installBtn.textContent = 'Entendido';
+        installBtn.addEventListener('click', () => (banner.hidden = true), { once: true });
+      }
+    }
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      if (!IS_STANDALONE) showBanner();
+    });
+
+    installBtn.addEventListener('click', async () => {
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      try {
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') banner.hidden = true;
+      } catch (_) {}
+      deferredPrompt = null;
+    });
+
+    $('#install-dismiss').addEventListener('click', () => (banner.hidden = true));
+    if (IS_IOS && !IS_STANDALONE) setTimeout(() => showBanner(true), 1200);
+
+    /* ---------- API en vivo: fetch, render y refresco ---------- */
+
+    function setLive(ok) {
+      if (ok) {
+        els.liveBadge.className =
+          'inline-flex items-center gap-1.5 rounded-full bg-[#d5ecd8] px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-[#23323c]';
+        els.liveBadge.innerHTML =
+          '<span class="relative flex h-2 w-2"><span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#23323c] opacity-50"></span><span class="relative inline-flex h-2 w-2 rounded-full bg-[#23323c]"></span></span>En vivo';
+      } else {
+        els.liveBadge.className =
+          'inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-white/70';
+        els.liveBadge.innerHTML =
+          '<span class="relative inline-flex h-2 w-2 rounded-full bg-red-400"></span>Sin conexión';
+      }
+    }
+
+    async function fetchRates() {
+      const attempt = async (url, headers) => {
+        const ac = new AbortController();
+        const timer = setTimeout(() => ac.abort(), 8000);
+        try {
+          const res = await fetch(url, { headers, signal: ac.signal, cache: 'no-store' });
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          return res.json();
+        } finally {
+          clearTimeout(timer);
+        }
+      };
+      // 1) Proxy serverless de Netlify: la key solo existe en el servidor
+      try {
+        return await attempt(PROXY_URL, { Accept: 'application/json' });
+      } catch (_) {}
+
+      // 2) Proxy local (server.js), para desarrollo
+      try {
+        return await attempt(LOCAL_PROXY_URL, { Accept: 'application/json' });
+      } catch (_) {}
+
+      // 3) Puente de solo lectura: tasas reales publicadas en cotizave.com
+      const ac = new AbortController();
+      const timer = setTimeout(() => ac.abort(), 12000);
+      try {
+        const res = await fetch(BRIDGE_URL, { signal: ac.signal, cache: 'no-store' });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const parsed = parseBridgeRates(await res.text());
+        if (!parsed) throw new Error('bridge_parse_failed');
+        return parsed;
+      } finally {
+        clearTimeout(timer);
+      }
+    }
+
+    /* Extrae las tasas EN VIVO del texto de cotizave.com (formato estable):
+     *   "BCV BCV oficial Vigente desde el jueves 17 de septiembre Bs.847,44"
+     *   "BN Binance P2P 17 sep · 17:17 Bs.953,60"
+     * 847,44 → miles con punto, decimales con coma. */
+    function parseBridgeRates(text) {
+      const num = (s) => parseFloat(s.replace(/\./g, '').replace(',', '.'));
+      const rates = [];
+
+      const bcv = text.match(/BCV\s+BCV oficial[^\n]*?Bs\.\s*([\d.,]+)/);
+      if (bcv) {
+        const since = text.match(/Vigente desde el ([a-záéíóúñ]+ \d{1,2} de [a-záéíóúñ]+)/i);
+        rates.push({
+          market: 'bcv', mid: num(bcv[1]),
+          updated_at: new Date().toISOString(),
+          since_text: since ? since[1] : null,
+        });
+      }
+
+      const bin = text.match(/BN\s+Binance P2P[^\n]*?Bs\.\s*([\d.,]+)/);
+      if (bin) {
+        const meta = text.match(/BN\s+Binance P2P\s+(\d{1,2} \w{3} · \d{2}:\d{2})/);
+        rates.push({
+          market: 'binance_p2p', mid: num(bin[1]),
+          updated_at: new Date().toISOString(),
+          meta_text: meta ? meta[1] : null,
+        });
+      }
+
+      return rates.length ? { rates } : null;
+    }
+
+    function applyRates(payload) {
+      const list = Array.isArray(payload && payload.rates) ? payload.rates : [];
+      const byMarket = {};
+      for (const r of list) byMarket[String(r.market || '').toLowerCase()] = r;
+      const pick = (...keys) => keys.map((k) => byMarket[k]).find((r) => r && Number.isFinite(r.mid));
+
+      const bcv = pick('bcv', 'bcv_oficial');
+      const bin = pick('binance_p2p', 'binance');
+
+      if (bcv) {
+        RATES.bcv.value = bcv.mid;
+        els.bcvPrice.textContent = `Bs. ${fmt(bcv.mid)}`;
+        els.bcvPrice.classList.remove('animate-pulse');
+        const d = bcv.updated_at ? new Date(bcv.updated_at) : null;
+        els.bcvSince.textContent = bcv.since_text
+          ? `Vigente desde el ${bcv.since_text}`
+          : d && !Number.isNaN(d.getTime())
+            ? `Vigente desde el ${fmtSince(d)}`
+            : els.bcvSince.textContent;
+      }
+      if (bin) {
+        RATES.binance.value = bin.mid;
+        els.binPrice.textContent = `Bs. ${fmt(bin.mid)}`;
+        els.binPrice.classList.remove('animate-pulse');
+        const d = bin.updated_at ? new Date(bin.updated_at) : null;
+        if (bin.meta_text) {
+          els.binMeta.textContent = bin.meta_text;
+        } else if (d && !Number.isNaN(d.getTime())) {
+          els.binMeta.textContent = `${fmtShortDate(d)} · ${fmtTime(d)}`;
+        }
+      }
+      setLive(RATES.bcv.value != null || RATES.binance.value != null);
+      compute(); // recalcula al instante con datos vivos
+    }
+
+    let lastLoad = 0;
+
+    async function loadRates() {
+      const now = Date.now();
+      if (now - lastLoad < 30 * 1000) return; // anti-spam al cambiar de pestaña
+      lastLoad = now;
+      try {
+        const payload = await fetchRates();
+        applyRates(payload);
+      } catch (err) {
+        console.error('[tasasve] No se pudieron obtener las tasas:', err);
+        if (RATES.bcv.value == null && RATES.binance.value == null) {
+          setLive(false);
+          els.resultDetail.textContent = 'Sin conexión con la API';
+          els.bcvPrice.classList.remove('animate-pulse');
+          els.binPrice.classList.remove('animate-pulse');
+        }
+      }
+    }
+
+    /* ---------- Arranque ---------- */
+    compute();
+    loadRates();
+    setInterval(loadRates, REFRESH_MS);
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) loadRates();
+    });
+
+    // Hook de depuración (no afecta producción): window.__tasasVE.loadRates()
+    window.__tasasVE = { applyRates, loadRates, RATES };
+  })();
+  </script>
+</body>
+</html>

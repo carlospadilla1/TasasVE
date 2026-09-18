@@ -1,0 +1,37 @@
+{
+  "name": "Tasas Venezuela",
+  "short_name": "Tasas VE",
+  "description": "Calculadora y tasas de cambio del dólar en Venezuela (BCV y Binance P2P) en vivo.",
+  "id": "/",
+  "start_url": "./index.html?source=pwa",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#e0f7f1",
+  "background_color": "#e0f7f1",
+  "lang": "es-VE",
+  "dir": "ltr",
+  "categories": ["finance", "utilities"],
+  "icons": [
+    {
+      "src": "./icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/icon-maskable.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Tasas de referencia",
+      "short_name": "Tasas",
+      "url": "./index.html?source=shortcut",
+      "icons": [{ "src": "./icons/icon.svg", "sizes": "any", "type": "image/svg+xml" }]
+    }
+  ]
+}
