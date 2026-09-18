@@ -1,6 +1,7 @@
 'use strict';
 
 const UPSTREAM = 'https://api.cotizave.com/v1/fx/rates';
+const CURRENCIES_UPSTREAM = 'https://api.cotizave.com/v1/fx/bcv/currencies';
 
 exports.handler = async (event) => {
   if (event.httpMethod === 'OPTIONS') {
@@ -37,6 +38,32 @@ exports.handler = async (event) => {
       headers: { 'X-API-Key': apiKey, Accept: 'application/json' },
     });
     const body = await upstream.text();
+    let responseBody = body;
+
+    if (upstream.ok) {
+      try {
+        const payload = JSON.parse(body);
+        const currencies = await fetch(CURRENCIES_UPSTREAM, {
+          headers: { 'X-API-Key': apiKey, Accept: 'application/json' },
+        });
+        if (currencies.ok) {
+          const currencyPayload = await currencies.json();
+          const euro = Number(currencyPayload?.rates?.EUR);
+          const rates = Array.isArray(payload.rates) ? payload.rates : [];
+          if (Number.isFinite(euro) && !rates.some((rate) => rate.market === 'eur_reference')) {
+            rates.push({
+              market: 'eur_reference',
+              type: 'reference',
+              mid: euro,
+              updated_at: currencyPayload.captured_at,
+              effective_date: currencyPayload.reference_value_date,
+            });
+            payload.rates = rates;
+            responseBody = JSON.stringify(payload);
+          }
+        }
+      } catch (_) {}
+    }
 
     return {
       statusCode: upstream.status,
@@ -45,7 +72,7 @@ exports.handler = async (event) => {
         'Cache-Control': 'no-store',
         'Content-Type': 'application/json; charset=utf-8',
       },
-      body,
+      body: responseBody,
     };
   } catch (error) {
     return {

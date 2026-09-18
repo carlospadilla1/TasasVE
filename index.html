@@ -647,7 +647,7 @@
       for (const r of list) byMarket[String(r.market || '').toLowerCase()] = r;
       const pick = (...keys) => keys.map((k) => byMarket[k]).find((r) => r && Number.isFinite(r.mid));
 
-      const bcv = pick('bcv', 'bcv_oficial');
+      const bcv = pick('reference', 'bcv', 'bcv_oficial');
       const bin = pick('binance_p2p', 'binance');
       const eur = pick('eur_reference', 'eur', 'euro', 'euro_bcv', 'eur_bcv', 'bcv_eur');
 

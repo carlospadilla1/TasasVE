@@ -9,7 +9,7 @@
  *  - Limpieza de caches antiguos al activar.
  * ============================================================ */
 
-const VERSION = 'v1.2.1'; // nuevo ícono Bs verde
+const VERSION = 'v1.2.2'; // integra la tasa Euro BCV
 const SHELL_CACHE = `tasasve-shell-${VERSION}`;
 const DATA_CACHE = `tasasve-data-${VERSION}`;
 const ASSET_CACHE = `tasasve-assets-${VERSION}`;
