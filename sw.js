@@ -9,7 +9,7 @@
  *  - Limpieza de caches antiguos al activar.
  * ============================================================ */
 
-const VERSION = 'v1.2.2'; // integra la tasa Euro BCV
+const VERSION = 'v1.3.0'; // refactor: fuentes paralelas (bcv.org.ve + cotizave), Euro desde el BCV oficial
 const SHELL_CACHE = `tasasve-shell-${VERSION}`;
 const DATA_CACHE = `tasasve-data-${VERSION}`;
 const ASSET_CACHE = `tasasve-assets-${VERSION}`;
@@ -17,7 +17,6 @@ const ASSET_CACHE = `tasasve-assets-${VERSION}`;
 const SHELL_ASSETS = [
   './',
   './index.html',
-  './config.js',
   './manifest.json',
   './icons/favicon.svg',
   './icons/icon.svg',
