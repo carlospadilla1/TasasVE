@@ -341,7 +341,9 @@
       if (!Number.isFinite(rate)) {
         els.result.textContent = usdToVes ? 'Bs. —' : '$ —';
         els.resultLabel.textContent = usdToVes ? 'Recibes en VES' : 'Recibes en USD';
-        els.resultDetail.textContent = 'Cargando tasas en vivo…';
+        // Si ya llegó una respuesta (aunque parcial), la tasa elegida NO existe:
+        // no queda en "cargando" eterno, se informa como no disponible.
+        els.resultDetail.textContent = ratesArrived ? 'Tasa no disponible' : 'Cargando tasas en vivo…';
         return;
       }
 
@@ -641,48 +643,88 @@
       return rates.length ? { rates } : null;
     }
 
+    /* ---------- Parseo y render del payload de la API ----------
+     * Requerimientos cubiertos aquí:
+     *  1. Euro: se extrae con Array.find por market 'eur_reference'
+     *     (respaldo: base 'EUR'). Nunca por claves inexistentes.
+     *  2. Optional chaining + fallback 0 al leer 'mid': si la estructura
+     *     cambia, NO se lanza una excepción por undefined.
+     *  3. try/catch/finally: el estado de carga siempre se apaga. */
+    let ratesArrived = false; // true en cuanto llega cualquier payload (aunque sea parcial)
+
     function applyRates(payload) {
-      const list = Array.isArray(payload && payload.rates) ? payload.rates : [];
-      const byMarket = {};
-      for (const r of list) byMarket[String(r.market || '').toLowerCase()] = r;
-      const pick = (...keys) => keys.map((k) => byMarket[k]).find((r) => r && Number.isFinite(r.mid));
+      try {
+        const list = Array.isArray(payload && payload.rates) ? payload.rates : [];
+        const byMarket = {};
+        for (const r of list) byMarket[String(r.market || '').toLowerCase()] = r;
+        const pick = (...keys) => keys.map((k) => byMarket[k]).find((r) => r && Number.isFinite(r.mid));
 
-      const bcv = pick('reference', 'bcv', 'bcv_oficial');
-      const bin = pick('binance_p2p', 'binance');
-      const eur = pick('eur_reference', 'eur', 'euro', 'euro_bcv', 'eur_bcv', 'bcv_eur');
+        const bcv = pick('reference', 'bcv', 'bcv_oficial');
+        const bin = pick('binance_p2p', 'binance');
 
-      if (bcv) {
-        RATES.bcv.value = bcv.mid;
-        els.bcvPrice.textContent = `Bs. ${fmt(bcv.mid)}`;
-        els.bcvPrice.classList.remove('animate-pulse');
-        const d = bcv.updated_at ? new Date(bcv.updated_at) : null;
-        els.bcvSince.textContent = bcv.since_text
-          ? `Vigente desde el ${bcv.since_text}`
-          : d && !Number.isNaN(d.getTime())
-            ? `Vigente desde el ${fmtSince(d)}`
-            : els.bcvSince.textContent;
-      }
-      if (bin) {
-        RATES.binance.value = bin.mid;
-        els.binPrice.textContent = `Bs. ${fmt(bin.mid)}`;
-        els.binPrice.classList.remove('animate-pulse');
-        const d = bin.updated_at ? new Date(bin.updated_at) : null;
-        if (bin.meta_text) {
-          els.binMeta.textContent = bin.meta_text;
-        } else if (d && !Number.isNaN(d.getTime())) {
-          els.binMeta.textContent = `${fmtShortDate(d)} · ${fmtTime(d)}`;
+        // Requerimiento 1+2: el objeto del Euro se identifica con
+        // market 'eur_reference' (o base 'EUR' como respaldo).
+        // Optional chaining + fallback 0 evitan el colapso si cambia la estructura.
+        const eurRecord =
+          list.find((rate) => rate && rate.market === 'eur_reference') ||
+          list.find((rate) => rate && rate.base === 'EUR');
+        const euroRate = Number(eurRecord?.mid) || 0;
+
+        if (bcv) {
+          RATES.bcv.value = bcv.mid;
+          els.bcvPrice.textContent = `Bs. ${fmt(bcv.mid)}`;
+          els.bcvPrice.classList.remove('animate-pulse');
+          const d = bcv.updated_at ? new Date(bcv.updated_at) : null;
+          els.bcvSince.textContent = bcv.since_text
+            ? `Vigente desde el ${bcv.since_text}`
+            : d && !Number.isNaN(d.getTime())
+              ? `Vigente desde el ${fmtSince(d)}`
+              : els.bcvSince.textContent;
         }
+        if (bin) {
+          RATES.binance.value = bin.mid;
+          els.binPrice.textContent = `Bs. ${fmt(bin.mid)}`;
+          els.binPrice.classList.remove('animate-pulse');
+          const d = bin.updated_at ? new Date(bin.updated_at) : null;
+          if (bin.meta_text) {
+            els.binMeta.textContent = bin.meta_text;
+          } else if (d && !Number.isNaN(d.getTime())) {
+            els.binMeta.textContent = `${fmtShortDate(d)} · ${fmtTime(d)}`;
+          }
+        }
+        if (euroRate > 0) {
+          RATES.euro.value = euroRate;
+          els.eurPrice.textContent = `Bs. ${fmt(euroRate)}`;
+          els.eurPrice.classList.remove('animate-pulse');
+        }
+      } catch (err) {
+        // Requerimiento 3: un payload inesperado NUNCA debe dejar la UI colgada.
+        console.error('[tasasve] Error procesando las tasas (payload inesperado):', err);
+      } finally {
+        ratesArrived = true;
+        setLive(RATES.bcv.value != null || RATES.binance.value != null || RATES.euro.value != null);
+        compute(); // recalcula al instante con los datos vivos disponibles
       }
-      if (eur) {
-        RATES.euro.value = eur.mid;
-        els.eurPrice.textContent = `Bs. ${fmt(eur.mid)}`;
-        els.eurPrice.classList.remove('animate-pulse');
-      }
-      setLive(RATES.bcv.value != null || RATES.binance.value != null || RATES.euro.value != null);
-      compute(); // recalcula al instante con datos vivos
     }
 
     let lastLoad = 0;
+
+    /* Requerimiento 3: apaga el estado de carga pase lo que pase.
+     * Se ejecuta SIEMPRE al terminar loadRates: éxito, error de red o payload corrupto. */
+    function stopLoading() {
+      els.bcvPrice.classList.remove('animate-pulse');
+      els.binPrice.classList.remove('animate-pulse');
+      els.eurPrice.classList.remove('animate-pulse');
+
+      const hasData = RATES.bcv.value != null || RATES.binance.value != null || RATES.euro.value != null;
+      if (hasData) {
+        setLive(true);
+        compute(); // repinta con el estado real ('Tasa no disponible' si faltó alguna)
+      } else {
+        setLive(false);
+        els.resultDetail.textContent = 'Sin conexión con la API';
+      }
+    }
 
     async function loadRates() {
       const now = Date.now();
@@ -690,15 +732,11 @@
       lastLoad = now;
       try {
         const payload = await fetchRates();
-        applyRates(payload);
+        applyRates(payload); // el parseo ya está protegido con try/catch/finally interno
       } catch (err) {
         console.error('[tasasve] No se pudieron obtener las tasas:', err);
-        if (RATES.bcv.value == null && RATES.binance.value == null) {
-          setLive(false);
-          els.resultDetail.textContent = 'Sin conexión con la API';
-          els.bcvPrice.classList.remove('animate-pulse');
-          els.binPrice.classList.remove('animate-pulse');
-        }
+      } finally {
+        stopLoading(); // el loader SIEMPRE se apaga, con o sin datos
       }
     }
 
@@ -711,7 +749,7 @@
     });
 
     // Hook de depuración (no afecta producción): window.__tasasVE.loadRates()
-    window.__tasasVE = { applyRates, loadRates, RATES };
+    window.__tasasVE = { applyRates, loadRates, stopLoading, RATES };
   })();
   </script>
 </body>
