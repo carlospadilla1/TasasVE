@@ -9,7 +9,7 @@
  *  - Limpieza de caches antiguos al activar.
  * ============================================================ */
 
-const VERSION = 'v1.3.0'; // refactor: fuentes paralelas (bcv.org.ve + cotizave), Euro desde el BCV oficial
+const VERSION = 'v1.3.2'; // splash de bienvenida 'despegue de cohete' (motor Motion precacheado)
 const SHELL_CACHE = `tasasve-shell-${VERSION}`;
 const DATA_CACHE = `tasasve-data-${VERSION}`;
 const ASSET_CACHE = `tasasve-assets-${VERSION}`;
@@ -21,6 +21,9 @@ const SHELL_ASSETS = [
   './icons/favicon.svg',
   './icons/icon.svg',
   './icons/icon-maskable.svg',
+  // Motor Motion (anima el splash): precacheado para que la animación
+  // de bienvenida también funcione en modo offline.
+  'https://cdn.jsdelivr.net/npm/motion@11.13.5/dist/motion.js',
 ];
 
 self.addEventListener('install', (event) => {

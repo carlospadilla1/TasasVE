@@ -23,6 +23,9 @@
 
   <!-- Tailwind CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Motion (motor de Framer Motion, build UMD) — anima el splash 'despegue de cohete' -->
+  <script defer src="https://cdn.jsdelivr.net/npm/motion@11.13.5/dist/motion.js"
+    onload="document.dispatchEvent(new CustomEvent('motion:ready'))"></script>
   <script>
     tailwind.config = {
       theme: {
@@ -105,12 +108,86 @@
 
     @media (prefers-reduced-motion: reduce) {
       .orb, .fade-up { animation: none; }
+      #app-footer { animation: none; opacity: 1; }
       * { transition-duration: 0.01ms !important; }
+      /* Sin preferencia de movimiento: sin splash animado */
+      #splash { display: none !important; }
     }
+
+    /* ===== Splash inmersivo (Dark Liquid Glass) ===== */
+    /* Estado inicial pre-animación (anti-FOUC): fuera de pantalla, escala .6, giro en Z.
+       Nota: spring + keyframes en UNA animación requieren la misma lista de funciones
+       de transform (convención de planos) → translateY + rotate + scale en todo el vuelo. */
+    #splash-card-wrap {
+      transform: translateY(100vh) rotate(4deg) scale(.6);
+      opacity: 0;
+    }
+    /* Micro-movimiento orgánico: balanceo sutil en Z mientras asciende (via CSS, compone con el spring) */
+    #splash-card { animation: splash-lean 2.6s ease-in-out; }
+    @keyframes splash-lean {
+      0%   { transform: rotate(0deg); }
+      30%  { transform: rotate(-2.4deg); }
+      62%  { transform: rotate(1.6deg); }
+      85%  { transform: rotate(-0.7deg); }
+      100% { transform: rotate(0deg); }
+    }
+    /* Anillo de gradiente giratorio: esmeralda→menta en bucle (ajusta 2.8s para la velocidad) */
+    #splash-ring {
+      background: conic-gradient(from var(--ring-angle, 0deg), #10b981, #34d399, rgba(52, 211, 153, .25), #10b981);
+      animation: splash-spin 2.8s linear infinite;
+    }
+    @keyframes splash-spin { to { --ring-angle: 360deg; } }
+    @property --ring-angle {
+      syntax: '<angle>'; initial-value: 0deg; inherits: false;
+    }
+    /* Barra láser: pulso que barre dentro de su carril ultradelgado */
+    #splash-beam { animation: beam-sweep 1.4s ease-in-out infinite; }
+    @keyframes beam-sweep {
+      0%   { transform: translateX(-120%); opacity: .4; }
+      50%  { transform: translateX(320%); opacity: 1; }
+    }
+
+    /* Footer: permanece invisible 2.5s (no choca con el splash) y hace fade-in suave de 1.5s */
+    #app-footer { animation: footer-in 1.5s ease-out 2.5s forwards; }
+    @keyframes footer-in { to { opacity: 1; } }
   </style>
 </head>
 
 <body class="min-h-dvh bg-black font-sans text-white antialiased touch-manipulation">
+
+  <!-- ===== Splash inmersivo (Motion + Canvas FX) — solo primera visita por sesión ===== -->
+  <div id="splash" aria-hidden="true" hidden>
+    <!-- Lienzo blanco hiper-minimalista (textura sutil) + máscara de wipe radial en la salida -->
+    <div id="splash-veil"
+      class="fixed inset-0 z-[60] flex flex-col items-center justify-between overflow-hidden py-12">
+      <!-- Lienzo oscuro (idéntico al fondo de la app): recibe la máscara radial de salida -->
+      <div id="splash-wipe" class="absolute inset-0 bg-zinc-950"
+        style="background-image: radial-gradient(circle at 50% 30%, rgba(16, 185, 129, .10), transparent 55%), radial-gradient(circle at 50% 105%, rgba(16, 185, 129, .07), transparent 45%);"></div>
+      <!-- Sistema de partículas: orbes esmeralda/menta ascendentes en espiral (canvas) -->
+      <canvas id="splash-particles" class="pointer-events-none absolute inset-0 h-full w-full" aria-hidden="true"></canvas>
+
+      <!-- Hero: tarjeta Dark Liquid Glass con isotipo tipográfico propio (alto contraste) -->
+      <div id="splash-card-wrap" class="relative will-change-transform" style="transform-style: preserve-3d; perspective: 900px;">
+        <div id="splash-glow" class="pointer-events-none absolute left-1/2 top-1/2 h-44 w-44 -translate-x-1/2 -translate-y-1/2 rounded-full bg-emerald-500/20 blur-3xl opacity-0"></div>
+        <!-- Anillo: conic-gradient esmeralda→menta en bucle, visible como borde iluminado -->
+        <div id="splash-ring" class="pointer-events-none absolute -inset-[3px] rounded-[28px] opacity-0" aria-hidden="true"></div>
+        <div id="splash-card" class="relative inline-flex flex-col items-center justify-center rounded-3xl border border-emerald-500/30 bg-zinc-900/80 p-6 shadow-2xl shadow-emerald-500/20 backdrop-blur-xl will-change-transform">
+          <!-- Isotipo tipográfico: blanco→menta sobre vidrio oscuro (legibilidad impecable) -->
+          <span class="select-none bg-gradient-to-br from-white via-emerald-50 to-emerald-300 bg-clip-text text-4xl font-extrabold tracking-tight text-transparent" aria-hidden="true">Bs</span>
+          <span class="mt-1 h-[3px] w-10 rounded-full bg-gradient-to-r from-emerald-500 to-emerald-300 shadow-[0_0_12px_rgba(16,185,129,.8)]" aria-hidden="true"></span>
+        </div>
+      </div>
+
+      <!-- Identidad tipográfica: blur-in letra por letra + barra láser ultradelgada -->
+      <div id="splash-copy" class="relative text-center opacity-0 will-change-transform">
+        <p id="splash-title" class="text-2xl font-bold tracking-tight text-white" aria-label="CambioVE"></p>
+        <p class="mt-1 text-sm font-medium text-zinc-400">Cargando tasas del día…</p>
+        <div class="mx-auto mt-3 h-[2px] w-40 overflow-hidden rounded-full bg-white/10">
+          <div id="splash-beam" class="h-full w-1/3 rounded-full bg-gradient-to-r from-emerald-500 via-emerald-400 to-teal-300"></div>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- ===== Fondo: orbes verdes dinámicos ===== -->
   <div aria-hidden="true" class="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
@@ -127,8 +204,8 @@
     <label id="amount-label" for="amount"></label>
   </div>
 
-  <main class="min-h-[100dvh] w-full flex flex-col justify-center py-8">
-    <div class="mx-auto w-full max-w-md px-4">
+  <main class="min-h-[100dvh] w-full flex flex-col justify-center pt-8">
+    <div class="mx-auto w-full max-w-md px-4 my-auto">
 
     <!-- ===== Tarjetas de tasa: selector táctil sincronizado con las píldoras ===== -->
     <div role="radiogroup" aria-label="Seleccionar tasa tocando una tarjeta">
@@ -281,6 +358,12 @@
       <p id="result-detail" class="mx-auto mt-3 max-w-[18rem] truncate text-center font-mono text-[11px] text-white/30 transition-all duration-300">Cargando tasas en vivo…</p>
     </section>
     </div>
+
+    <!-- ===== Footer minimalista: entra con fade retrasado (no choca con el splash) ===== -->
+    <footer id="app-footer"
+      class="mt-auto w-full bg-gradient-to-t from-black/60 to-transparent py-3 text-center text-[11px] text-white/30 opacity-0">
+      © 2026 Todos los derechos reservados.
+    </footer>
   </main>
 
   <!-- ===== Banner de instalación PWA ===== -->
@@ -306,6 +389,199 @@
 
   <!-- ==================== Lógica (Vanilla JS) ==================== -->
   <script>
+  /* ════════════════════════════════════════════════════════════════
+   * ✨ SPLASH DE BIENVENIDA (identidad blanca) — Motion (mismo motor de Framer Motion)
+   * Secuencia: despegue fluido del logo (spring) → estela esmeralda →
+   * disolvencia del lienzo blanco hacia la app "Dark Liquid Glass". Solo se reproduce en la
+   * primera visita de la sesión; con prefers-reduced-motion o sin motor
+   * (CDN caído / offline) la app se libera sin bloquearse jamás.
+   * ════════════════════════════════════════════════════════════════ */
+  (() => {
+    'use strict';
+
+    const splash = document.getElementById('splash');
+    if (!splash) return;
+
+    // ?splash-debug=1 → fuerza la reproducción (ignora el candado de sesión) y
+    // conserva el splash al final, marcado, para inspección del estado final.
+    const DEBUG = new URLSearchParams(location.search).has('splash-debug');
+    const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduceMotion || (sessionStorage.getItem('tasasve:splash') && !DEBUG)) {
+      splash.remove();
+      return;
+    }
+    try { sessionStorage.setItem('tasasve:splash', '1'); } catch (_) {}
+
+    splash.hidden = false;
+
+    // Título en spans individuales: habilita el blur-in letra por letra (stagger 55ms)
+    const titleEl = document.getElementById('splash-title');
+    if (titleEl && !titleEl.children.length) {
+      'CambioVE'.split('').forEach((ch) => {
+        const s = document.createElement('span');
+        s.textContent = ch;
+        s.style.cssText = 'display:inline-block;opacity:0;will-change:transform,filter;';
+        titleEl.appendChild(s);
+      });
+    }
+
+    let launched = false;
+    const finish = () => {
+      if (window.__splashFXStop) window.__splashFXStop();   // apaga el canvas de partículas
+      if (DEBUG) { splash.dataset.splashFinished = '1'; splash.style.pointerEvents = 'none'; }
+      else splash.remove();
+      document.dispatchEvent(new CustomEvent('splash:done'));
+    };
+    const skip = () => { if (!launched) { launched = true; finish(); } };
+
+    const hasEngine = () => window.Motion && typeof window.Motion.animate === 'function';
+
+    if (!hasEngine()) {
+      // El motor está en defer: esperar su evento; si nunca llega (offline), liberar.
+      document.addEventListener('motion:ready', () => boot(), { once: true });
+      addEventListener('load', () => setTimeout(() => { if (!hasEngine()) skip(); }, 1200));
+      return;
+    }
+    boot();
+
+    /* ── Motor de partículas (canvas): orbes esmeralda/menta que ascienden en espiral
+     *    detrás del logo, con parpadeo y tamaño variables.
+     *    Ajustes rápidos: COLORS (tonos), COUNT (densidad), vy (velocidad), drift (espiral). */
+    function bootFX() {
+      const canvas = document.getElementById('splash-particles');
+      if (!canvas || !canvas.getContext) return;
+      const ctx = canvas.getContext('2d');
+      const COLORS = ['#10b981', '#34d399', '#a7f3d0', '#6ee7b7'];   // solo gama esmeralda/menta (cero amarillo)
+      let W = 0, H = 0;
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      W = canvas.clientWidth; H = canvas.clientHeight;
+      canvas.width = W * dpr; canvas.height = H * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      const COUNT = Math.min(42, Math.max(16, Math.round(W / 22)));
+      const parts = Array.from({ length: COUNT }, () => ({
+        x: W * (0.5 + (Math.random() - 0.5) * 0.9),
+        y: H + Math.random() * H * 0.6,
+        r: 1.2 + Math.random() * 3.2,        // radio del orbe
+        vy: 26 + Math.random() * 70,         // velocidad de ascenso (px/s)
+        drift: 14 + Math.random() * 46,      // amplitud de la espiral (px)
+        phase: Math.random() * Math.PI * 2,
+        spin: 0.6 + Math.random() * 1.8,     // giro de la espiral (rad/s)
+        alpha: 0.25 + Math.random() * 0.55,
+        color: COLORS[(Math.random() * COLORS.length) | 0],
+      }));
+      let last = performance.now(), alive = true;
+      const tick = (now) => {
+        if (!alive) return;
+        const dt = Math.min(0.05, (now - last) / 1000); last = now;
+        ctx.clearRect(0, 0, W, H);
+        for (const p of parts) {
+          p.y -= p.vy * dt;
+          p.phase += p.spin * dt;
+          if (p.y < -12) { p.y = H + 10; p.x = W * (0.5 + (Math.random() - 0.5) * 0.9); }
+          const x = p.x + Math.sin(p.phase) * p.drift;       // componente espiral
+          const tw = 0.6 + 0.4 * Math.sin(p.phase * 2.1);    // parpadeo (twinkle)
+          ctx.globalAlpha = p.alpha * tw;
+          ctx.fillStyle = p.color;
+          ctx.shadowColor = p.color; ctx.shadowBlur = 10;    // halo de luz
+          ctx.beginPath(); ctx.arc(x, p.y, p.r, 0, Math.PI * 2); ctx.fill();
+        }
+        ctx.globalAlpha = 1; ctx.shadowBlur = 0;
+        requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+      window.__splashFXStop = () => { alive = false; };
+    }
+
+    function boot() {
+      if (launched) return;
+      launched = true;
+
+      const { animate } = window.Motion;
+      const $ = (id) => document.getElementById(id);
+      const cardWrap = $('splash-card-wrap');
+      const ring = $('splash-ring');
+      const veil = $('splash-veil');
+      const glow = $('splash-glow');
+      const copy = $('splash-copy');
+
+      // Normaliza: Motion One expone .finished; las controls de Framer son thenables.
+      const whenDone = (ctrl) => (ctrl && ctrl.finished ? ctrl.finished : ctrl);
+
+      let done = false;
+      const finishOnce = () => { if (!done) { done = true; finish(); } };
+      const safety = setTimeout(finishOnce, 8000);         // red de seguridad absoluta (máquinas lentas)
+
+      try {
+        // ── FX: partículas + anillo gradiente (ver #particulas y @keyframes splash-spin) ──
+        bootFX();
+
+        // ── 1) HERO MOTION: spring orgánico pesado (stiffness 75 / damping 14 / mass 1.1) ──
+        //     Inercia al arrancar, aceleración fluida y frenado suave (ζ≈0.77).
+        //     Convención de planos 2D (translateY + rotate + scale) = al CSS anti-FOUC;
+        //     el balanceo orgánico en Z lo aporta .splash-lean en el elemento hijo.
+        const liftoff = animate(cardWrap, {
+          transform: 'translateY(0vh) rotate(0deg) scale(1)',
+          type: 'spring',
+          stiffness: 75,
+          damping: 14,
+          mass: 1.1,
+        });
+        animate(cardWrap, { opacity: [0, 1], duration: 0.4, ease: 'ease-out' });
+
+        // Aura/estela de energía que acompaña el ascenso del logo
+        animate(glow, { opacity: [0, 1, 0.75], scale: [0.5, 1.1, 1.25], duration: 1.9, ease: 'ease-out' });
+
+        whenDone(liftoff).then(() => {
+          if (done) return;
+          cardWrap.style.transform = 'translateY(0vh) rotate(0deg) scale(1)';
+
+          // ── 2) BREATHING: levitación continua de la tarjeta + anillo vivo ──
+          animate(cardWrap, { y: [-4, 4, -4], duration: 3.2, repeat: Infinity, ease: 'ease-in-out' });
+          animate(ring, { opacity: [0, 0.9], duration: 0.6 });
+          animate(glow, { opacity: [0.75, 0.5, 0.75], duration: 3.2, repeat: Infinity, ease: 'ease-in-out' });
+
+          // ── 3) TYPOGRAPHY BLUR-IN: letra por letra con desenfoque progresivo ──
+          const title = $('splash-title');
+          const letras = title.textContent ? Array.from(title.children) : [];
+          letras.forEach((el, i) => {
+            animate(el, {
+              opacity: [0, 1],
+              filter: ['blur(10px)', 'blur(0px)'],
+              y: [8, 0],
+              delay: i * 0.055,
+              duration: 0.5,
+              ease: [0.22, 1, 0.36, 1],
+            });
+          });
+          animate(copy, { opacity: [0, 1], y: [14, 0], duration: 0.5, ease: [0.22, 1, 0.36, 1] });
+
+          // ── 4) SALIDA LIMPIA: disolvencia cinematográfica de TODO el velo (sin círculos) ──
+          //     Fade general + micro zoom, revelando al instante la app ya cargada debajo.
+          setTimeout(() => {
+            if (done) return;
+            animate(copy, { opacity: 0, y: -12, filter: 'blur(6px)', duration: 0.4, ease: 'ease-in' });
+            animate(cardWrap, {
+              transform: 'translateY(0vh) rotate(0deg) scale(1.08)',
+              opacity: 0,
+              duration: 0.6,
+              delay: 0.1,
+              ease: [0.32, 0, 0.67, 0],
+            });
+            whenDone(animate(veil, {
+              opacity: 0,
+              scale: 1.03,
+              duration: 0.8,
+              ease: 'ease-in-out',
+            })).then(finishOnce).catch(finishOnce);
+          }, 1150);   // hold de bienvenida tras el aterrizaje (ajustable)
+        }).catch(finishOnce);
+      } catch (err) {
+        console.error('[splash] secuencia interrumpida; liberando la app:', err);
+        finishOnce();
+      }
+    }
+  })();
+
   (() => {
     'use strict';
 
