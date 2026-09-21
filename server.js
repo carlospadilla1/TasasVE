@@ -23,6 +23,7 @@
 'use strict';
 
 const http = require('http');
+const https = require('https');
 const fs = require('fs');
 const path = require('path');
 
@@ -55,6 +56,36 @@ const scrapeCache = { bcv: { at: 0, rates: null }, cotizave: { at: 0, rates: nul
 
 const parseNumero = (v) => parseFloat(String(v).replace(/\./g, '').replace(',', '.'));
 
+/* bcv.org.ve sirve una cadena TLS incompleta que Node rechaza (los
+ * navegadores la toleran). Agente relajado SOLO para esta fuente
+ * pública: dato de referencia sin secretos en juego. */
+const AGENTE_BCV = new https.Agent({ rejectUnauthorized: false });
+
+function httpsGet(url, { agent, ms = 15000 } = {}) {
+  return new Promise((resolve, reject) => {
+    const req = https.get(url, {
+      agent,
+      headers: { Accept: 'text/html', 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' },
+      timeout: ms,
+    }, (res) => {
+      if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+        res.resume();
+        return resolve(httpsGet(new URL(res.headers.location, url).href, { agent, ms }));
+      }
+      if (res.statusCode !== 200) {
+        res.resume();
+        return reject(new Error(`${url} → HTTP ${res.statusCode}`));
+      }
+      let data = '';
+      res.setEncoding('utf8');
+      res.on('data', (c) => { data += c; });
+      res.on('end', () => resolve(data));
+    });
+    req.on('timeout', () => req.destroy(new Error(`timeout ${ms} ms en ${url}`)));
+    req.on('error', reject);
+  });
+}
+
 /* Scrapea la portada del BCV: USD y EUR oficiales + Fecha Valor.
  * Estructura estable: <span> EUR </span> … <strong class="strong-tb"> 974,09309112</strong>
  * Fecha Valor: <span content="2026-09-21T00:00:00-04:00">…</span> */
@@ -62,9 +93,7 @@ async function scrapeBcvOficial() {
   const c = scrapeCache.bcv;
   if (c.rates && Date.now() - c.at < SCRAPE_TTL_MS.bcv) return c.rates;
 
-  const res = await fetch(BCV_HOME, { headers: { Accept: 'text/html' } });
-  if (!res.ok) throw new Error(`${BCV_HOME} → HTTP ${res.status}`);
-  const html = await res.text();
+  const html = await httpsGet(BCV_HOME, { agent: AGENTE_BCV });
 
   const rates = [];
   for (const { market, code } of [
@@ -103,20 +132,22 @@ async function scrapeCotizave() {
   const res = await fetch(COTIZAVE_HOME, { headers: { Accept: 'text/html' } });
   if (!res.ok) throw new Error(`${COTIZAVE_HOME} → HTTP ${res.status}`);
   const html = await res.text();
+  // Se aplana el HTML a texto (mismos regex que el parser del cliente)
+  const texto = html.replace(/<[^>]+>/g, ' ');
 
   const rates = [];
-  const bin = html.match(/BN\s+Binance P2P[\s\S]{0,400}?Bs\.\s*([\d.,]+)/);
+  const bin = texto.match(/BN\s+Binance P2P[^\n]*?Bs\.\s*([\d.,]+)/);
   if (bin && Number.isFinite(parseNumero(bin[1]))) {
-    const meta = html.match(/BN\s+Binance P2P[\s\S]{0,80}?(\d{1,2}\s+\w{3}\s*·\s*\d{2}:\d{2})/);
+    const meta = texto.match(/BN\s+Binance P2P\s+(\d{1,2} \w{3} · \d{2}:\d{2})/);
     rates.push({
       market: 'binance_p2p', type: 'p2p', base: 'USD', mid: parseNumero(bin[1]),
-      meta_text: meta ? meta[1].replace(/\s+/g, ' ') : null,
+      meta_text: meta ? meta[1] : null,
       updated_at: new Date().toISOString(), source: 'cotizave.com',
     });
   }
-  const bcv = html.match(/BCV\s+BCV oficial[\s\S]{0,400}?Bs\.\s*([\d.,]+)/);
+  const bcv = texto.match(/BCV\s+BCV oficial[^\n]*?Bs\.\s*([\d.,]+)/);
   if (bcv && Number.isFinite(parseNumero(bcv[1]))) {
-    const since = html.match(/Vigente desde el ([a-záéíóúñ]+ \d{1,2} de [a-záéíóúñ]+)/i);
+    const since = texto.match(/Vigente desde el ([a-záéíóúñ]+ \d{1,2} de [a-záéíóúñ]+)/i);
     rates.push({
       market: 'bcv', type: 'reference', base: 'USD', mid: parseNumero(bcv[1]),
       since_text: since ? since[1] : null,
