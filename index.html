@@ -207,6 +207,15 @@
   <main class="min-h-[100dvh] w-full flex flex-col justify-center pt-8">
     <div class="mx-auto w-full max-w-md px-4 my-auto">
 
+    <!-- ===== Fecha y hora de HOY en Caracas (UTC−4): SIEMPRE hora de Venezuela,
+         sin importar el país o zona horaria del cliente. La pinta el JS más abajo. ===== -->
+    <time id="caracas-now" datetime="" class="fade-up mb-3 flex items-center justify-center gap-1.5 rounded-full border border-emerald-400/25 bg-emerald-500/10 px-4 py-1.5 text-[11px] font-medium text-white/75 shadow-[0_0_18px_rgba(16,185,129,0.12)] backdrop-blur-2xl" style="animation-delay: 0s">
+      <svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0 text-emerald-400">
+        <circle cx="12" cy="12" r="9"></circle>
+        <path d="M12 7.5V12l3 1.8"></path>
+      </svg>
+      <span id="caracas-date-text" class="font-semibold text-white/90">Cargando fecha de Caracas…</span><span id="caracas-tz-label" class="ml-1 font-normal text-white/30" hidden>(hora de Caracas)</span>
+    </time>
     <!-- ===== Tarjetas de tasa: selector táctil sincronizado con las píldoras ===== -->
     <div role="radiogroup" aria-label="Seleccionar tasa tocando una tarjeta">
 
@@ -668,6 +677,46 @@
     });
 
     const TZ = 'America/Caracas';
+
+    /* ════════════════════════════════════════════════════════════════
+     * 📅 FECHA Y HORA DE HOY EN CARACAS — siempre, sin importar el país
+     * del cliente. Se formatea con locale 'es-VE' y ZONA FIJA
+     * America/Caracas (UTC−4, sin horario de verano): el reloj del
+     * dispositivo solo aporta el instante, nunca la zona.
+     * ════════════════════════════════════════════════════════════════ */
+    const caracasNowEl = document.getElementById('caracas-now');
+    const caracasTextEl = document.getElementById('caracas-date-text');
+    const caracasTzEl = document.getElementById('caracas-tz-label');   // sufijo «(hora de Caracas)» en tono tenue
+
+    // "martes 13 de octubre de 2026" (formato venezolano, sin coma tras el día)
+    const fmtCaracasFullDate = (d) =>
+      new Intl.DateTimeFormat('es-VE', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: TZ })
+        .format(d).replace(/,\s*/, ' ');
+
+    // "09:45" (24 h, hora de Caracas)
+    const fmtCaracasClock = (d) =>
+      new Intl.DateTimeFormat('es-VE', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: TZ }).format(d);
+
+    function renderCaracasNow() {
+      if (!caracasTextEl) return;
+      const now = new Date();
+      caracasTextEl.textContent = `${fmtCaracasFullDate(now)} · ${fmtCaracasClock(now)}`;
+      if (caracasTzEl) caracasTzEl.hidden = false;   // el sufijo aparece solo con fecha ya pintada
+      if (caracasNowEl) {
+        caracasNowEl.setAttribute('datetime', now.toISOString()); // instante real en UTC (para máquinas)
+        caracasNowEl.setAttribute('title', `Ahora en Caracas (UTC−4) · tu zona: ${Intl.DateTimeFormat().resolvedOptions().timeZone || 'desconocida'}`);
+      }
+    }
+
+    // Refresco exacto al cambiar de minuto + al volver a la pestaña (reloj dormido)
+    (() => {
+      const tick = () => {
+        renderCaracasNow();
+        setTimeout(tick, 60000 - (Date.now() % 60000) + 60);
+      };
+      tick();
+      document.addEventListener('visibilitychange', () => { if (!document.hidden) renderCaracasNow(); });
+    })();
 
     // "jueves 17 de septiembre" (sin coma tras el día)
     const fmtSince = (d) =>
