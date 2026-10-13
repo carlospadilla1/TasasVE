@@ -214,7 +214,7 @@
         <circle cx="12" cy="12" r="9"></circle>
         <path d="M12 7.5V12l3 1.8"></path>
       </svg>
-      <span id="caracas-date-text" class="font-semibold text-white/90">Cargando fecha de Caracas…</span><span id="caracas-tz-label" class="ml-1 font-normal text-white/30" hidden>(hora de Caracas)</span>
+      <span id="caracas-date-text" class="font-semibold text-white/90">Cargando fecha de Caracas…</span>
     </time>
     <!-- ===== Tarjetas de tasa: selector táctil sincronizado con las píldoras ===== -->
     <div role="radiogroup" aria-label="Seleccionar tasa tocando una tarjeta">
@@ -222,7 +222,7 @@
     <!-- Tarjeta: BCV oficial -->
     <section aria-label="Tasa BCV" role="radio" aria-checked="true" tabindex="0"
       data-rate-card="bcv"
-      class="rate-card fade-up relative select-none rounded-3xl border border-white/10 bg-white/5 p-5 backdrop-blur-2xl"
+      class="rate-card fade-up relative select-none rounded-3xl border border-white/10 bg-white/5 p-4 backdrop-blur-2xl"
       style="animation-delay: .05s">
       <div class="flex items-center justify-between gap-3">
         <div class="flex min-w-0 items-center gap-3">
@@ -230,14 +230,14 @@
           <h2 class="text-sm font-medium text-white/60">BCV oficial</h2>
           <span class="rate-check" aria-hidden="true"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5 9.2 16.7 19 6.9"/></svg></span>
         </div>
-        <p id="bcv-price" class="animate-pulse shrink-0 font-mono text-2xl font-bold tabular-nums text-white transition-all duration-300 ease-in-out sm:text-3xl">Bs. —</p>
+        <p id="bcv-price" class="animate-pulse shrink-0 font-mono text-xl font-bold tabular-nums text-white transition-all duration-300 ease-in-out sm:text-2xl">Bs. —</p>
       </div>
     </section>
 
     <!-- Tarjeta: Binance P2P -->
     <section aria-label="Tasa Binance P2P" role="radio" aria-checked="false" tabindex="-1"
       data-rate-card="binance"
-      class="rate-card fade-up mt-3 relative select-none rounded-3xl border border-white/10 bg-white/5 p-5 backdrop-blur-2xl"
+      class="rate-card fade-up mt-3 relative select-none rounded-3xl border border-white/10 bg-white/5 p-4 backdrop-blur-2xl"
       style="animation-delay: .15s">
       <div class="flex items-center justify-between gap-3">
         <div class="flex min-w-0 items-center gap-3">
@@ -245,14 +245,14 @@
           <h2 class="text-sm font-medium text-white/60">Binance P2P</h2>
           <span class="rate-check" aria-hidden="true"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5 9.2 16.7 19 6.9"/></svg></span>
         </div>
-        <p id="bin-price" class="animate-pulse shrink-0 font-mono text-2xl font-bold tabular-nums text-white transition-all duration-300 ease-in-out sm:text-3xl">Bs. —</p>
+        <p id="bin-price" class="animate-pulse shrink-0 font-mono text-xl font-bold tabular-nums text-white transition-all duration-300 ease-in-out sm:text-2xl">Bs. —</p>
       </div>
     </section>
 
     <!-- Tarjeta: Euro BCV -->
     <section aria-label="Tasa Euro" role="radio" aria-checked="false" tabindex="-1"
       data-rate-card="euro"
-      class="rate-card fade-up mt-3 relative select-none rounded-3xl border border-white/10 bg-white/5 p-5 backdrop-blur-2xl"
+      class="rate-card fade-up mt-3 relative select-none rounded-3xl border border-white/10 bg-white/5 p-4 backdrop-blur-2xl"
       style="animation-delay: .2s">
       <div class="flex items-center justify-between gap-3">
         <div class="flex min-w-0 items-center gap-3">
@@ -260,7 +260,7 @@
           <h2 class="text-sm font-medium text-white/60">Euro BCV</h2>
           <span class="rate-check" aria-hidden="true"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5 9.2 16.7 19 6.9"/></svg></span>
         </div>
-        <p id="eur-price" class="animate-pulse shrink-0 font-mono text-2xl font-bold tabular-nums text-white transition-all duration-300 ease-in-out sm:text-3xl">Bs. —</p>
+        <p id="eur-price" class="animate-pulse shrink-0 font-mono text-xl font-bold tabular-nums text-white transition-all duration-300 ease-in-out sm:text-2xl">Bs. —</p>
       </div>
     </section>
 
@@ -686,7 +686,6 @@
      * ════════════════════════════════════════════════════════════════ */
     const caracasNowEl = document.getElementById('caracas-now');
     const caracasTextEl = document.getElementById('caracas-date-text');
-    const caracasTzEl = document.getElementById('caracas-tz-label');   // sufijo «(hora de Caracas)» en tono tenue
 
     // "martes 13 de octubre de 2026" (formato venezolano, sin coma tras el día)
     const fmtCaracasFullDate = (d) =>
@@ -700,8 +699,11 @@
     function renderCaracasNow() {
       if (!caracasTextEl) return;
       const now = new Date();
-      caracasTextEl.textContent = `${fmtCaracasFullDate(now)} · ${fmtCaracasClock(now)}`;
-      if (caracasTzEl) caracasTzEl.hidden = false;   // el sufijo aparece solo con fecha ya pintada
+      // La hora va más delgada que la fecha, y los minutos aún más: horas
+      // font-normal / minutos font-extralight (pesos vía Tailwind, sin cambiar tamaño).
+      const [hh, mm] = fmtCaracasClock(now).split(':');
+      caracasTextEl.innerHTML =
+        `${fmtCaracasFullDate(now)} · <span class="font-normal text-white/70">${hh}</span><span class="font-extralight text-white/45">:${mm}</span>`;
       if (caracasNowEl) {
         caracasNowEl.setAttribute('datetime', now.toISOString()); // instante real en UTC (para máquinas)
         caracasNowEl.setAttribute('title', `Ahora en Caracas (UTC−4) · tu zona: ${Intl.DateTimeFormat().resolvedOptions().timeZone || 'desconocida'}`);
