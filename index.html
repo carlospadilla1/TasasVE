@@ -15,11 +15,11 @@
   <meta name="apple-mobile-web-app-title" content="Tasas VE" />
   <link rel="icon" href="icons/favicon.svg" type="image/svg+xml" />
 
-  <!-- Tipografía Fintech Neo-Bank: Plus Jakarta Sans (texto) + Space Grotesk (montos) -->
+  <!-- Tipografía única global: Space Grotesk (500/600/700) para texto Y cifras -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet"
-    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" />
+    href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&display=swap" />
 
   <!-- Tailwind CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -31,10 +31,9 @@
       theme: {
         extend: {
           fontFamily: {
-            // Plus Jakarta Sans: interfaz, etiquetas, fechas y textos
-            sans: ['"Plus Jakarta Sans"', '-apple-system', 'BlinkMacSystemFont', 'system-ui', 'sans-serif'],
-            // Space Grotesk: SOLO montos, precios de tasas, input y resultado
-            num: ['"Space Grotesk"', '"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+            // Space Grotesk: fuente ÚNICA global (texto + cifras), trazo geométrico
+            sans: ['"Space Grotesk"', '-apple-system', 'BlinkMacSystemFont', 'system-ui', 'sans-serif'],
+            num: ['"Space Grotesk"', 'system-ui', 'sans-serif'],
           },
           letterSpacing: {
             // Números compactos y estables (spec: -0.02em)
@@ -51,26 +50,100 @@
     input[type='number']::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
     input[type='number'] { -moz-appearance: textfield; appearance: textfield; }
 
-    /* Foco accesible coherente con el acento esmeralda */
-    :focus-visible { outline: 2px solid #34d399; outline-offset: 2px; }
-
-    /* ===== Gradientes dinámicos de fondo: orbes verdes flotando ===== */
-    @keyframes orb-float {
-      from { transform: translate3d(0, 0, 0) scale(1); }
-      to   { transform: translate3d(6%, -7%, 0) scale(1.12); }
+    /* Foco accesible coherente con el acento Volt */
+    :focus-visible { outline: 2px solid #F0FF00; outline-offset: 2px; }
+    /* Selección de texto en toda la app: Volt sobre carbón */
+    ::selection { background: #F0FF00; color: #181818; }
+    /* Badge brutalista de estado/tasa bajo la calculadora: bloque sólido Volt
+       con texto carbón, esquinas micro-redondeadas (contrasta con las curvas
+       del Liquid Glass) y cifras tabulares de Space Grotesk. */
+    .result-badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      margin: 16px auto 0;
+      padding: 4px 12px;
+      border-radius: 4px;
+      background-color: #F0FF00;
+      color: #181818;
+      font-size: 12px; font-weight: 600;
+      letter-spacing: .02em;
+      font-variant-numeric: tabular-nums;
     }
-    .orb { animation: orb-float 10s ease-in-out infinite alternate; }
-    .orb-b { animation-delay: -3.5s; }
-    .orb-c { animation-delay: -7s; }
-    /* Presencia ambiental 0.22–0.32: se nota sin opacar el contenido */
-    .orb.orb-a { opacity: .32; }
-    .orb.orb-b { opacity: .26; }
-    .orb.orb-c { opacity: .22; }
-    /* Móvil: las esferas se acercan al eje central/vertical del viewport */
+
+    /* ===== Fondo vivo: esferas Lima Ácido sobre gris carbón =====
+     * Anti color-banding SIN blur: la suavidad vive en el gradiente con
+     * interpolación oklch (6 paradas que funden la luz hacia #181818, sin
+     * pasar por transparent). Se anima SOLO transform — nunca opacity/filter. */
+    @keyframes floatOrbs {
+      from { transform: translate3d(35vw, 30vh, 0) scale(1.2); }
+      to   { transform: translate3d(-35vw, -30vh, 0) scale(.85); }
+    }
+    .orb {
+      width: 85vw; height: 85vw;
+      min-width: 680px; min-height: 680px;
+      border-radius: 50%;
+      background: radial-gradient(
+        circle at center in oklch,
+        rgba(240, 255, 0, 0.22) 0%,
+        rgba(205, 218, 8, 0.16) 18%,
+        rgba(155, 165, 14, 0.11) 35%,
+        rgba(100, 106, 18, 0.06) 52%,
+        rgba(55, 58, 21, 0.025) 68%,
+        rgba(24, 24, 24, 0) 85%
+      );
+      transform: translateZ(0);
+      will-change: transform;
+      backface-visibility: hidden;
+      animation: floatOrbs 4.5s ease-in-out infinite alternate;
+    }
+    /* Esfera B: toque cálido #D4FF00 con la MISMA curva anti-banding */
+    .orb.orb-b {
+      background: radial-gradient(
+        circle at center in oklch,
+        rgba(212, 255, 0, 0.22) 0%,
+        rgba(200, 218, 8, 0.16) 18%,
+        rgba(150, 165, 14, 0.11) 35%,
+        rgba(97, 106, 18, 0.06) 52%,
+        rgba(54, 58, 21, 0.025) 68%,
+        rgba(24, 24, 24, 0) 85%
+      );
+      animation-duration: 5.5s; animation-delay: -2.2s;
+      animation-direction: alternate-reverse; /* recorrido opuesto al de A */
+    }
+    .orb.orb-c { animation-duration: 6s; animation-delay: -3s; }
+    /* Esferas Púrpura (D y E): MISMA curva anti-banding en oklch, sin blur.
+       Se intercalan con las Lima para crear la atmósfera bicolor. */
+    .orb.orb-d, .orb.orb-e {
+      background: radial-gradient(
+        circle at center in oklch,
+        rgba(128, 70, 195, 0.25) 0%,
+        rgba(108, 58, 168, 0.18) 20%,
+        rgba(82, 44, 128, 0.11) 38%,
+        rgba(56, 33, 84, 0.06) 55%,
+        rgba(36, 26, 48, 0.025) 70%,
+        rgba(24, 24, 24, 0) 85%
+      );
+    }
+    .orb.orb-d { animation-duration: 5s;   animation-delay: -0.8s; animation-direction: alternate-reverse; }
+    .orb.orb-e { animation-duration: 4.8s; animation-delay: -3.7s; }
+    /* Dithering REAL: patrón PNG 128×128 de ruido monocromático 1-bit
+       (píxeles claros/oscuros alternados), repetido y al 4.5% SIN blend.
+       Fuerza la mezcla óptica de los escalones de color y rompe el banding.
+       z-[1] dentro del stacking context -z-10: encima de las esferas,
+       debajo de la UI. */
+    .dither-layer {
+      background-image: url("data:image/png;base64,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");
+      background-repeat: repeat;
+      background-size: 128px 128px;
+      opacity: .045;
+    }
+    /* Móvil: 95vw (bañan la pantalla) y coreografía intercalando Lima/Púrpura */
     @media (max-width: 768px) {
-      .orb.orb-a { top: 8%;     left: -14%; }
-      .orb.orb-b { top: 36%;    right: -20%; }
-      .orb.orb-c { bottom: 14%; left: 10%; }
+      .orb { width: 95vw; height: 95vw; min-width: 0; min-height: 0; }
+      .orb.orb-a { top: 15%;    left: -12%; }
+      .orb.orb-b { bottom: 20%; right: -14%; }
+      .orb.orb-c { bottom: 32%; left: 16%; }
+      .orb.orb-d { top: 4%;     left: 38%; }
+      .orb.orb-e { bottom: 2%;  right: 2%; }
     }
 
     /* ===== Aparición escalonada: fade-in-up ===== */
@@ -89,7 +162,7 @@
      * Bisel interno 3D + borde de refracción + blur saturado.
      * ═══════════════════════════════════════════════════════════ */
     .ios-liquid-glass {
-      background: linear-gradient(135deg, rgba(255,255,255,.08) 0%, rgba(255,255,255,.02) 50%, rgba(255,255,255,.05) 100%);
+      background: linear-gradient(135deg, rgba(255,255,255,.08) 0%, rgba(255,255,255,.02) 50%, rgba(255,255,255,.04) 100%);
       backdrop-filter: blur(32px) saturate(180%);
       -webkit-backdrop-filter: blur(32px) saturate(180%);
       border: 1px solid rgba(255, 255, 255, .14);
@@ -97,20 +170,21 @@
         0 12px 32px -4px rgba(0, 0, 0, .5),
         inset 0 1.5px 1px 0 rgba(255, 255, 255, .35),
         inset 1px 0 1px 0 rgba(255, 255, 255, .15),
-        inset 0 -1px 2px 0 rgba(16, 185, 129, .15);
+        inset 0 -1px 2px 0 rgba(255, 255, 255, .10);
     }
-    /* Variante botones: mismo cristal + tinte esmeralda y borde más claro */
+    /* Variante botones: cristal neutro ahumado, borde sutil (se enciende en
+       Volt solo al interactuar) */
     .ios-glass-btn {
-      border-color: rgba(255, 255, 255, .3);
-      background: linear-gradient(135deg, rgba(255,255,255,.10) 0%, rgba(255,255,255,.03) 50%, rgba(16,185,129,.10) 100%);
+      border-color: rgba(255, 255, 255, .12);
+      background: linear-gradient(135deg, rgba(255,255,255,.08) 0%, rgba(255,255,255,.02) 50%, rgba(255,255,255,.05) 100%);
     }
     /* Botón ↑↓: corte 100% opaco sobre el seam (sin cristal translúcido).
        Fondo sólido + anillo del color exacto de la página: las líneas de las
        tarjetas jamás se ven atravesando el círculo. Cero glow verde. */
     .swap-btn {
-      background-color: #0c1410;
-      border: 1px solid rgba(255, 255, 255, .15);
-      box-shadow: 0 0 0 4px #040806;
+      background-color: #1E1E1E;
+      border: 1px solid rgba(255, 255, 255, .14);
+      box-shadow: 0 0 0 4px #181818;
     }
     /* Pastilla de ícono: 38×38, radio 12, íconos 18×18 centrados geométricamente */
     .ios-icon-btn {
@@ -121,16 +195,16 @@
       cursor: pointer; -webkit-tap-highlight-color: transparent;
       transition: all .2s ease;
     }
-    .ios-icon-btn:hover { color: #fff; background-color: rgba(255, 255, 255, .14); }
-    .ios-icon-btn:active { transform: scale(.94); }
-    .ios-icon-btn:focus-visible { outline: 2px solid #34d399; outline-offset: 2px; }
-    .ios-icon-btn[data-copied] { color: #2ed573; }
+    .ios-icon-btn:hover { color: #F0FF00; border-color: rgba(240, 255, 0, .55); background-color: rgba(240, 255, 0, .07); }
+    .ios-icon-btn:active { transform: scale(.94); color: #F0FF00; border-color: #F0FF00; }
+    .ios-icon-btn:focus-visible { outline: 2px solid #F0FF00; outline-offset: 2px; }
+    .ios-icon-btn[data-copied] { color: #F0FF00; }
 
     /* Luz ambiental difusa: el cristal necesita luz real que refractar */
     .glass-ambient { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
     .glass-orb {
       position: absolute; z-index: 0; pointer-events: none; border-radius: 9999px;
-      background: radial-gradient(circle, rgba(16, 185, 129, .18) 0%, transparent 70%);
+      background: radial-gradient(circle, rgba(240, 255, 0, .16) 0%, transparent 70%);
       filter: blur(60px);
     }
     .glass-orb-a { width: 190px; height: 190px; top: -10px; left: 10px; }
@@ -165,10 +239,10 @@
     }
     .rate-col:hover { opacity: .8; }
     .rate-col:active { transform: scale(.98); }
-    .rate-col:focus-visible { outline: 2px solid #34d399; outline-offset: -2px; border-radius: 12px; }
+    .rate-col:focus-visible { outline: 2px solid #F0FF00; outline-offset: -2px; border-radius: 12px; }
     /* Monto: Space Grotesk 700, tabular y compacto (16px; baja a 14px solo en móviles estrechos) */
     .rate-col .rate-price {
-      font-family: "Space Grotesk", "Plus Jakarta Sans", system-ui, sans-serif;
+      font-family: "Space Grotesk", system-ui, sans-serif;
       font-size: clamp(14px, 4vw, 16px);
       font-weight: 700;
       color: #fff;
@@ -187,16 +261,16 @@
       position: absolute; left: 50%; bottom: 1px;
       width: 16px; height: 2px; border-radius: 2px;
       transform: translateX(-50%);
-      background: #2ed573;
-      box-shadow: 0 0 8px #2ed573;
+      background: #F0FF00;
+      box-shadow: 0 0 8px #F0FF00;
       opacity: 0; transition: opacity .25s ease;
     }
     .rate-col.rate-selected,
     .rate-col.rate-selected:hover {
       opacity: 1;
-      background: radial-gradient(circle at center, rgba(46, 213, 115, .14) 0%, transparent 70%);
+      background: radial-gradient(circle at center, rgba(240, 255, 0, .12) 0%, transparent 70%);
     }
-    .rate-col.rate-selected .rate-sigla { color: #2ed573; font-weight: 600; letter-spacing: .05em; }
+    .rate-col.rate-selected .rate-sigla { color: #F0FF00; font-weight: 600; letter-spacing: .05em; }
     .rate-col.rate-selected::after { opacity: 1; }
 
     /* ===== Auto-ajuste del monto resultante: el número nunca desborda el glass ===== */
@@ -227,9 +301,9 @@
       85%  { transform: rotate(-0.7deg); }
       100% { transform: rotate(0deg); }
     }
-    /* Anillo de gradiente giratorio: esmeralda→menta en bucle (ajusta 2.8s para la velocidad) */
+    /* Anillo de gradiente giratorio: Lima Ácido en bucle (ajusta 2.8s para la velocidad) */
     #splash-ring {
-      background: conic-gradient(from var(--ring-angle, 0deg), #10b981, #34d399, rgba(52, 211, 153, .25), #10b981);
+      background: conic-gradient(from var(--ring-angle, 0deg), #F0FF00, #D4FF00, rgba(240, 255, 0, .25), #F0FF00);
       animation: splash-spin 2.8s linear infinite;
     }
     @keyframes splash-spin { to { --ring-angle: 360deg; } }
@@ -249,7 +323,7 @@
   </style>
 </head>
 
-<body class="min-h-dvh bg-black font-sans text-white antialiased touch-manipulation">
+<body class="min-h-dvh bg-[#181818] font-sans text-white antialiased touch-manipulation">
 
   <!-- ===== Splash inmersivo (Motion + Canvas FX) — solo primera visita por sesión ===== -->
   <div id="splash" aria-hidden="true" hidden>
@@ -258,19 +332,19 @@
       class="fixed inset-0 z-[60] flex flex-col items-center justify-between overflow-hidden py-12">
       <!-- Lienzo oscuro (idéntico al fondo de la app): recibe la máscara radial de salida -->
       <div id="splash-wipe" class="absolute inset-0 bg-zinc-950"
-        style="background-image: radial-gradient(circle at 50% 30%, rgba(16, 185, 129, .10), transparent 55%), radial-gradient(circle at 50% 105%, rgba(16, 185, 129, .07), transparent 45%);"></div>
+        style="background-image: radial-gradient(circle at 50% 30%, rgba(240, 255, 0, .10), transparent 55%), radial-gradient(circle at 50% 105%, rgba(240, 255, 0, .07), transparent 45%);"></div>
       <!-- Sistema de partículas: orbes esmeralda/menta ascendentes en espiral (canvas) -->
       <canvas id="splash-particles" class="pointer-events-none absolute inset-0 h-full w-full" aria-hidden="true"></canvas>
 
       <!-- Hero: tarjeta Dark Liquid Glass con isotipo tipográfico propio (alto contraste) -->
       <div id="splash-card-wrap" class="relative will-change-transform" style="transform-style: preserve-3d; perspective: 900px;">
-        <div id="splash-glow" class="pointer-events-none absolute left-1/2 top-1/2 h-44 w-44 -translate-x-1/2 -translate-y-1/2 rounded-full bg-emerald-500/20 blur-3xl opacity-0"></div>
+        <div id="splash-glow" class="pointer-events-none absolute left-1/2 top-1/2 h-44 w-44 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#F0FF00]/20 blur-3xl opacity-0"></div>
         <!-- Anillo: conic-gradient esmeralda→menta en bucle, visible como borde iluminado -->
         <div id="splash-ring" class="pointer-events-none absolute -inset-[3px] rounded-[28px] opacity-0" aria-hidden="true"></div>
-        <div id="splash-card" class="relative inline-flex flex-col items-center justify-center rounded-3xl border border-emerald-500/30 bg-zinc-900/80 p-6 shadow-2xl shadow-emerald-500/20 backdrop-blur-xl will-change-transform">
+        <div id="splash-card" class="relative inline-flex flex-col items-center justify-center rounded-3xl border border-[#F0FF00]/25 bg-zinc-900/80 p-6 shadow-2xl shadow-[#F0FF00]/15 backdrop-blur-xl will-change-transform">
           <!-- Isotipo tipográfico: blanco→menta sobre vidrio oscuro (legibilidad impecable) -->
-          <span class="select-none bg-gradient-to-br from-white via-emerald-50 to-emerald-300 bg-clip-text text-4xl font-extrabold tracking-tight text-transparent" aria-hidden="true">Bs</span>
-          <span class="mt-1 h-[3px] w-10 rounded-full bg-gradient-to-r from-emerald-500 to-emerald-300 shadow-[0_0_12px_rgba(16,185,129,.8)]" aria-hidden="true"></span>
+          <span class="select-none bg-gradient-to-br from-white via-[#f6ffbf] to-[#F0FF00] bg-clip-text text-4xl font-extrabold tracking-tight text-transparent" aria-hidden="true">Bs</span>
+          <span class="mt-1 h-[3px] w-10 rounded-full bg-gradient-to-r from-[#F0FF00] to-[#D4FF00] shadow-[0_0_12px_rgba(240,255,0,.8)]" aria-hidden="true"></span>
         </div>
       </div>
 
@@ -279,7 +353,7 @@
         <p id="splash-title" class="text-2xl font-bold tracking-tight text-white" aria-label="CambioVE"></p>
         <p class="mt-1 text-sm font-medium text-zinc-400">Cargando tasas del día…</p>
         <div class="mx-auto mt-3 h-[2px] w-40 overflow-hidden rounded-full bg-white/10">
-          <div id="splash-beam" class="h-full w-1/3 rounded-full bg-gradient-to-r from-emerald-500 via-emerald-400 to-teal-300"></div>
+          <div id="splash-beam" class="h-full w-1/3 rounded-full bg-gradient-to-r from-[#F0FF00] via-[#D4FF00] to-[#EAFF00]"></div>
         </div>
       </div>
     </div>
@@ -287,9 +361,14 @@
 
   <!-- ===== Fondo: orbes verdes dinámicos ===== -->
   <div aria-hidden="true" class="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
-    <div class="orb orb-a absolute -top-32 -left-24 h-96 w-96 rounded-full bg-emerald-600 blur-[120px]"></div>
-    <div class="orb orb-b absolute top-1/3 -right-28 h-[28rem] w-[28rem] rounded-full bg-green-500 blur-[120px]"></div>
-    <div class="orb orb-c absolute -bottom-40 left-1/4 h-96 w-96 rounded-full bg-emerald-500 blur-[120px]"></div>
+    <!-- Lima (A, B, C) intercaladas con Púrpura (D, E): atmósfera bicolor -->
+    <div class="orb orb-a absolute -top-32 -left-24"></div>
+    <div class="orb orb-b absolute top-1/3 -right-28"></div>
+    <div class="orb orb-c absolute -bottom-40 left-1/4"></div>
+    <div class="orb orb-d absolute top-[6%] left-[26%]"></div>
+    <div class="orb orb-e absolute bottom-[4%] right-[8%]"></div>
+    <!-- Dithering real: ruido 128×128 al 4.5%, encima de las esferas y debajo de la UI -->
+    <div class="dither-layer pointer-events-none fixed inset-0 z-[1]"></div>
   </div>
 
   <main class="min-h-[100dvh] w-full flex flex-col justify-center pt-8">
@@ -303,7 +382,7 @@
 
     <!-- ===== Fecha y hora de HOY en Caracas (UTC−4): SIEMPRE hora de Venezuela,
          sin importar el país o zona horaria del cliente. Texto plano, sin píldora. ===== -->
-    <time id="caracas-now" datetime="" class="fade-up mb-8 block text-center text-sm font-light text-white/60" style="animation-delay: 0s"><span id="caracas-date-text">Cargando fecha de Caracas…</span></time>
+    <time id="caracas-now" datetime="" class="fade-up mb-8 block text-center text-sm font-medium tabular-nums tracking-tight text-white/60" style="animation-delay: 0s"><span id="caracas-date-text">Cargando fecha de Caracas…</span></time>
 
     <!-- ===== Cotizaciones: UN contenedor horizontal Liquid Glass (3 columnas) =====
          Ancho = mismo contenedor que la calculadora (max-w-md / px-4).
@@ -315,10 +394,9 @@
 
       <!-- Tarjeta superior: ENVÍAS (misma estructura de 2 filas que la inferior) -->
       <div class="ios-liquid-glass rounded-[20px] px-5 py-4">
-        <!-- Fila 1: etiqueta simétrica + divisa de origen -->
-        <div class="flex items-center justify-between gap-3">
-          <span class="text-xs text-white/50">Envías</span>
-          <span id="currency-tag" class="shrink-0 text-xs font-semibold uppercase tracking-widest text-white/50">USD</span>
+        <!-- Fila 1: divisa/tasa de origen (dinámica, arriba a la izquierda) -->
+        <div class="flex items-center">
+          <span id="currency-tag" class="text-xs font-semibold uppercase tracking-widest text-white/50">USD</span>
         </div>
         <!-- Fila 2: monto + acciones centradas en el mismo eje -->
         <div class="mt-1 flex items-center justify-between gap-3">
@@ -350,7 +428,7 @@
            gap real entre tarjetas sea exactamente 8px y el botón muerda 20px
            cada borde de forma simétrica (48px − 8px) / 2 = 20. -->
       <button id="swap-btn" type="button" aria-label="Invertir dirección de conversión"
-        class="swap-btn relative z-10 grid h-12 w-12 shrink-0 place-items-center rounded-full p-2 text-emerald-300 transition-all duration-300 ease-in-out hover:text-emerald-200 active:scale-95"
+        class="swap-btn relative z-10 grid h-12 w-12 shrink-0 place-items-center rounded-full p-2 text-[#F0FF00] transition-all duration-300 ease-in-out hover:text-[#EAFF00] active:scale-95"
         style="margin: -28px auto;">
           <svg id="swap-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="m3 16 4 4 4-4"/><path d="M7 20V4"/><path d="m21 8-4-4-4 4"/><path d="M17 4v16"/>
@@ -360,10 +438,9 @@
 
       <!-- Tarjeta inferior: RECIBES (idéntica estructura de 2 filas) -->
       <div class="ios-liquid-glass rounded-[20px] px-5 py-4">
-        <!-- Fila 1: etiqueta simétrica (la pinta el JS) + tasa activa -->
-        <div class="flex items-center justify-between gap-3">
-          <p id="result-label" class="text-xs text-white/50">Recibes en VES</p>
-          <span id="rate-tag" class="shrink-0 text-xs font-semibold uppercase tracking-widest text-white/50">BCV</span>
+        <!-- Fila 1: tasa activa (dinámica, arriba a la izquierda; espejo de la tarjeta superior) -->
+        <div class="flex items-center">
+          <span id="rate-tag" class="text-xs font-semibold uppercase tracking-widest text-white/50"></span>
         </div>
         <!-- Fila 2: resultado + acciones centradas en el mismo eje -->
         <div class="mt-1 flex items-center justify-between gap-3">
@@ -395,8 +472,8 @@
            menos saturada. El JS sigue funcionando: consulta input[name="rate"]
            de forma tolerante (NodeList vacía = sin error). -->
 
-      <!-- Pie de estado: tasa activa / conexión (discreto) -->
-      <p id="result-detail" class="mx-auto mt-3 max-w-[18rem] truncate text-center text-[11px] tabular-nums tracking-tight text-white/30 transition-all duration-300">Cargando tasas en vivo…</p>
+      <!-- Badge de estado/tasa: alto contraste brutalista (Volt sobre carbón) -->
+      <p id="result-detail" class="result-badge whitespace-nowrap">Cargando tasas en vivo…</p>
     </section>
     </div>
 
@@ -410,14 +487,14 @@
   <!-- ===== Banner de instalación PWA ===== -->
   <div id="install-banner" hidden class="fixed inset-x-0 bottom-0 z-50 px-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
     <div class="mx-auto max-w-md">
-      <div id="install-banner-inner" class="flex transform items-center gap-3 rounded-2xl border border-white/10 bg-[#0b0f0e]/90 p-4 shadow-2xl backdrop-blur-2xl opacity-0 translate-y-[150%] transition-all duration-500 ease-in-out">
-        <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-emerald-500 text-base font-black text-black select-none" aria-hidden="true">Bs</span>
+      <div id="install-banner-inner" class="flex transform items-center gap-3 rounded-2xl border border-white/10 bg-[#1F1F1F]/90 p-4 shadow-2xl backdrop-blur-2xl opacity-0 translate-y-[150%] transition-all duration-500 ease-in-out">
+        <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#F0FF00] text-base font-black text-black select-none" aria-hidden="true">Bs</span>
         <div class="min-w-0 flex-1">
           <p class="text-sm font-semibold text-white">Instalar Tasas Venezuela</p>
           <p id="install-sub" class="text-xs text-white/50">Acceso directo desde tu pantalla de inicio.</p>
         </div>
         <button id="install-btn" type="button"
-          class="h-10 shrink-0 rounded-xl bg-emerald-500 px-4 text-sm font-bold text-black transition-colors hover:bg-emerald-400 active:scale-95">
+          class="h-10 shrink-0 rounded-xl bg-[#F0FF00] px-4 text-sm font-bold text-black transition-colors hover:bg-[#D4FF00] active:scale-95">
           Instalar
         </button>
         <button id="install-dismiss" type="button" aria-label="Cerrar"
@@ -492,7 +569,7 @@
       const canvas = document.getElementById('splash-particles');
       if (!canvas || !canvas.getContext) return;
       const ctx = canvas.getContext('2d');
-      const COLORS = ['#10b981', '#34d399', '#a7f3d0', '#6ee7b7'];   // solo gama esmeralda/menta (cero amarillo)
+      const COLORS = ['#F0FF00', '#D4FF00', '#EAFF00', '#CCFF33'];   // gama Lima Ácido / Volt
       let W = 0, H = 0;
       const dpr = Math.min(devicePixelRatio || 1, 2);
       W = canvas.clientWidth; H = canvas.clientHeight;
@@ -698,7 +775,6 @@
       swapIcon: $('#swap-icon'),
       currencyTag: $('#currency-tag'),
       result: $('#result'),
-      resultLabel: $('#result-label'),
       resultDetail: $('#result-detail'),
       rateTag: $('#rate-tag'),
       bcvPrice: $('#bcv-price'),
@@ -786,7 +862,6 @@
       // Sin datos vivos todavía: nunca se calcula con valores por defecto.
       if (!Number.isFinite(rate)) {
         els.result.innerHTML = moneyHtml(usdToVes ? 'Bs.' : '$', '—', 'result-cur', '');
-        els.resultLabel.textContent = usdToVes ? 'Recibes en VES' : 'Recibes en USD';
         // Si ya llegó una respuesta (aunque parcial), la tasa elegida NO existe:
         // no queda en "cargando" eterno, se informa como no disponible.
         els.resultDetail.textContent = lastDetailError || (ratesArrived ? 'Tasa no disponible' : 'Cargando tasas en vivo…');
@@ -796,7 +871,6 @@
 
       if (!Number.isFinite(amount) || amount < 0) {
         els.result.innerHTML = moneyHtml(usdToVes ? 'Bs.' : '$', '—', 'result-cur', '');
-        els.resultLabel.textContent = usdToVes ? 'Recibes en VES' : 'Recibes en USD';
         els.resultDetail.textContent = 'Introduce un monto válido';
         fitResultText();
         return;
@@ -804,7 +878,6 @@
 
       const out = usdToVes ? amount * rate : amount / rate;
       els.result.innerHTML = moneyHtml(usdToVes ? 'Bs.' : '$', fmt(out), 'result-cur', '');
-      els.resultLabel.textContent = usdToVes ? 'Recibes en VES' : 'Recibes en USD';
       els.resultDetail.textContent =
         `${fmt(amount)} ${usdToVes ? sourceCurrency : 'VES'} ${usdToVes ? '×' : '÷'} ${fmt(rate)} (${RATES[state.rate].label})`;
 
@@ -855,7 +928,7 @@
       try {
         await navigator.clipboard.writeText(value);
         icon.innerHTML = CHECK_SVG;
-        button.dataset.copied = 'true';       // CSS [.ios-icon-btn[data-copied]] → verde #2ed573
+        button.dataset.copied = 'true';       // CSS [.ios-icon-btn[data-copied]] → Volt #F0FF00
         setTimeout(() => {
           icon.innerHTML = COPY_SVG;
           delete button.dataset.copied;       // restaura el color base del hermano (simetría exacta)
@@ -1029,7 +1102,7 @@
 
       if (iosMode) {
         $('#install-sub').innerHTML =
-          'En iPhone: pulsa <b class="text-emerald-300">Compartir</b> y luego «Añadir a la pantalla de inicio».';
+          'En iPhone: pulsa <b class="text-[#F0FF00]">Compartir</b> y luego «Añadir a la pantalla de inicio».';
         installBtn.textContent = 'Entendido';
       }
     }
@@ -1215,8 +1288,6 @@
 
     function setConnectionError(message) {
       lastDetailError = message;
-      els.resultDetail.classList.add('text-red-400');
-      els.resultDetail.classList.remove('text-white/30');
       els.resultDetail.textContent = message;
       els.bcvPrice.classList.remove('animate-pulse');
       els.binPrice.classList.remove('animate-pulse');
@@ -1225,8 +1296,6 @@
 
     function clearConnectionError() {
       lastDetailError = null;
-      els.resultDetail.classList.remove('text-red-400');
-      els.resultDetail.classList.add('text-white/30');
     }
 
     function applyRates(payload) {
