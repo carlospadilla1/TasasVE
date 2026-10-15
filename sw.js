@@ -9,7 +9,7 @@
  *  - Limpieza de caches antiguos al activar.
  * ============================================================ */
 
-const VERSION = 'v1.3.2'; // splash de bienvenida 'despegue de cohete' (motor Motion precacheado)
+const VERSION = 'v1.4.1'; // Fix crítico de superficie: sin transform residual en .fade-up → las tarjetas difuminan el grano (backdrop-filter efectivo)
 const SHELL_CACHE = `tasasve-shell-${VERSION}`;
 const DATA_CACHE = `tasasve-data-${VERSION}`;
 const ASSET_CACHE = `tasasve-assets-${VERSION}`;

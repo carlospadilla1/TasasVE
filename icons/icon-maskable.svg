@@ -1,4 +1,22 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect width="512" height="512" fill="#10b981"/>
-  <text x="256" y="336" font-family="Inter, Arial, sans-serif" font-size="216" font-weight="800" fill="#050807" text-anchor="middle">Bs</text>
+  <defs>
+    <radialGradient id="bgm" cx="50%" cy="35%" r="70%">
+      <stop offset="0%" stop-color="#1f3322" />
+      <stop offset="55%" stop-color="#0b140d" />
+      <stop offset="100%" stop-color="#050805" />
+    </radialGradient>
+    <filter id="glowm" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="6" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+  <rect width="512" height="512" fill="url(#bgm)" />
+  <g>
+    <g filter="url(#glowm)">
+      <rect x="128" y="128" width="256" height="256" rx="70" fill="none" stroke="#dfff00" stroke-width="14" opacity=".95" />
+    </g>
+    <rect x="128" y="128" width="256" height="256" rx="70" fill="none" stroke="#dfff00" stroke-width="16" />
+    <text x="256" y="262" font-family="Georgia, 'Times New Roman', serif" font-size="108" font-weight="700" fill="#ffffff" text-anchor="middle">Bs</text>
+    <rect x="192" y="276" width="128" height="10" rx="5" fill="#dfff00" />
+  </g>
 </svg>

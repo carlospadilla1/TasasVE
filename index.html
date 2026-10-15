@@ -8,7 +8,7 @@
 
   <!-- PWA -->
   <link rel="manifest" href="manifest.json" />
-  <meta name="theme-color" content="#050505" />
+  <meta name="theme-color" content="#181818" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -151,7 +151,13 @@
       from { opacity: 0; transform: translateY(16px); }
       to   { opacity: 1; transform: translateY(0); }
     }
-    .fade-up { animation: fade-in-up .65s cubic-bezier(.21,1.02,.73,1) both; }
+    /* fill: backwards (NO both) — oculta el elemento durante el delay (anti-FOUC)
+       pero NO deja transform/opacity residual tras el fade-in. Un transform
+       residual convertiría al ancestro en backdrop-root (Chromium) y AISLARÍA
+       el backdrop-filter de las tarjetas: dejarían de difuminar el grano del
+       fondo y se verían granulosas. Con backwards, al terminar la animación
+       el elemento vuelve a su estilo base (sin transform, sin stacking context). */
+    .fade-up { animation: fade-in-up .65s cubic-bezier(.21,1.02,.73,1) backwards; }
 
     body {
       touch-action: manipulation;
@@ -200,6 +206,12 @@
     .ios-icon-btn:focus-visible { outline: 2px solid #F0FF00; outline-offset: 2px; }
     .ios-icon-btn[data-copied] { color: #F0FF00; }
 
+    /* Las tarjetas del conversor NO llevan estilo propio: comparten EXACTAMENTE
+       la clase .ios-liquid-glass del módulo superior (mismo background, mismo
+       backdrop-filter, mismo borde y radio). El acabado liso de las tres
+       superficies lo garantiza además el fill 'backwards' de .fade-up (sin
+       transform residual que aísle el backdrop-filter — ver comentario arriba). */
+
     /* Luz ambiental difusa: el cristal necesita luz real que refractar */
     .glass-ambient { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
     .glass-orb {
@@ -219,7 +231,7 @@
       position: relative;                                 /* se apila sobre la luz ambiental */
       overflow: hidden;
       width: 100%;
-      padding: 16px 8px;                                  /* aire vertical + ancho útil total */
+      padding: 22px 8px;                                  /* aire vertical: la luz del chip activo respira hasta opacidad 0 */
       border-radius: 20px;
     }
     /* Divisores verticales sutiles: solo en las dos primeras columnas */
@@ -230,7 +242,7 @@
       position: relative;
       display: flex; flex-direction: column; align-items: center; justify-content: center;
       gap: 4px;                                           /* aire uniforme sigla → nombre → monto */
-      min-width: 0; padding: 6px 4px;
+      min-width: 0; padding: 10px 6px;
       white-space: nowrap;                                /* prohibido salto de línea en cualquier texto */
       text-align: center;
       cursor: pointer; -webkit-tap-highlight-color: transparent;
@@ -252,8 +264,9 @@
     /* Prefijo monetario "Bs.": jerarquía secundaria (12px / 500 / 55%) */
     .rate-cur { font-size: .75rem; font-weight: 500; color: rgba(255, 255, 255, .55); margin-right: .25rem; }
 
-    /* Resultado grande: "Bs." un 25% más pequeño que la cifra, peso medio y tenue */
-    .result-cur { font-size: .75em; font-weight: 500; color: rgba(255, 255, 255, .6); margin-right: .12em; }
+    /* Placeholder del resultado: espejo EXACTO del placeholder del input superior
+       (mismo gris semitransparente, mismo tamaño heredado de la cifra grande) */
+    .result-ph { color: rgba(255, 255, 255, .2); }
 
     /* Estado activo minimalista: halo radial + píldora luminosa, sin cajas con borde */
     .rate-col::after {
@@ -268,7 +281,10 @@
     .rate-col.rate-selected,
     .rate-col.rate-selected:hover {
       opacity: 1;
-      background: radial-gradient(circle at center, rgba(240, 255, 0, .12) 0%, transparent 70%);
+      /* Destello sin clipping: 'ellipse closest-side' termina en opacidad 0 EXACTAMENTE
+         en los 4 bordes del chip → la luz se desvanece por completo antes del borde
+         físico del cristal y de los divisores (nunca se corta arriba/abajo). */
+      background: radial-gradient(ellipse closest-side at center, rgba(240, 255, 0, .15) 0%, rgba(240, 255, 0, .075) 38%, rgba(240, 255, 0, .028) 66%, transparent 100%);
     }
     .rate-col.rate-selected .rate-sigla { color: #F0FF00; font-weight: 600; letter-spacing: .05em; }
     .rate-col.rate-selected::after { opacity: 1; }
@@ -390,7 +406,7 @@
     <div id="rates-grid" class="rates-glass ios-liquid-glass fade-up w-full" style="animation-delay: .05s"
       role="radiogroup" aria-label="Cotizaciones: toca una tasa para usarla en la calculadora"></div>
     <!-- ===== Calculadora: 2 tarjetas acopladas + botón ↑↓ superpuesto ===== -->
-    <section aria-label="Calculadora de divisas" class="fade-up relative z-[1] mt-8 flex flex-col gap-2" style="animation-delay: .25s">
+    <section aria-label="Calculadora de divisas" class="fade-up relative mt-8 flex flex-col gap-2" style="animation-delay: .25s">
 
       <!-- Tarjeta superior: ENVÍAS (misma estructura de 2 filas que la inferior) -->
       <div class="ios-liquid-glass rounded-[20px] px-5 py-4">
@@ -444,7 +460,7 @@
         </div>
         <!-- Fila 2: resultado + acciones centradas en el mismo eje -->
         <div class="mt-1 flex items-center justify-between gap-3">
-          <p id="result" class="w-full min-w-0 whitespace-nowrap text-right font-num text-4xl font-bold tabular-nums tracking-tight text-white sm:text-5xl"><span class="result-cur">Bs.</span> —</p>
+          <p id="result" class="w-full min-w-0 whitespace-nowrap text-right font-num text-4xl font-bold tabular-nums tracking-tight text-white sm:text-5xl"><span class="result-ph">0,00</span></p>
           <div class="flex shrink-0 items-center gap-2">
             <button type="button" class="clear-btn ios-icon-btn ios-glass-btn ios-liquid-glass" aria-label="Limpiar cálculo">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -479,8 +495,8 @@
 
     <!-- ===== Footer minimalista: entra con fade retrasado (no choca con el splash) ===== -->
     <footer id="app-footer"
-      class="mt-auto w-full bg-gradient-to-t from-black/60 to-transparent py-3 text-center text-[11px] text-white/30 opacity-0">
-      © 2026 Todos los derechos reservados.
+      class="mt-auto w-full bg-gradient-to-t from-black/95 via-black/55 to-transparent py-12 text-center text-[11px] text-white/55 opacity-0">
+      <strong class="font-bold text-white/90">© 2026</strong> Todos los derechos reservados.
     </footer>
   </main>
 
@@ -861,7 +877,7 @@
 
       // Sin datos vivos todavía: nunca se calcula con valores por defecto.
       if (!Number.isFinite(rate)) {
-        els.result.innerHTML = moneyHtml(usdToVes ? 'Bs.' : '$', '—', 'result-cur', '');
+        els.result.innerHTML = '<span class="result-ph">0,00</span>'; // placeholder idéntico al del input superior
         // Si ya llegó una respuesta (aunque parcial), la tasa elegida NO existe:
         // no queda en "cargando" eterno, se informa como no disponible.
         els.resultDetail.textContent = lastDetailError || (ratesArrived ? 'Tasa no disponible' : 'Cargando tasas en vivo…');
@@ -870,14 +886,14 @@
       }
 
       if (!Number.isFinite(amount) || amount < 0) {
-        els.result.innerHTML = moneyHtml(usdToVes ? 'Bs.' : '$', '—', 'result-cur', '');
+        els.result.innerHTML = '<span class="result-ph">0,00</span>'; // placeholder idéntico al del input superior
         els.resultDetail.textContent = 'Introduce un monto válido';
         fitResultText();
         return;
       }
 
       const out = usdToVes ? amount * rate : amount / rate;
-      els.result.innerHTML = moneyHtml(usdToVes ? 'Bs.' : '$', fmt(out), 'result-cur', '');
+      els.result.textContent = fmt(out); // solo la cifra limpia: la etiqueta de la tarjeta ya nombra la divisa
       els.resultDetail.textContent =
         `${fmt(amount)} ${usdToVes ? sourceCurrency : 'VES'} ${usdToVes ? '×' : '÷'} ${fmt(rate)} (${RATES[state.rate].label})`;
 
@@ -919,7 +935,7 @@
       const icon = button.querySelector('[data-copy-icon]');
       const value = target === 'amount'
         ? sanitizeNumber(els.amount.value)
-        : sanitizeNumber(els.result.textContent);
+        : (els.result.querySelector('.result-ph') ? '' : sanitizeNumber(els.result.textContent)); // el placeholder "0,00" no se copia
 
       if (!value) {
         return;
