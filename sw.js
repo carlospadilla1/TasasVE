@@ -9,7 +9,7 @@
  *  - Limpieza de caches antiguos al activar.
  * ============================================================ */
 
-const VERSION = 'v1.4.1'; // Fix crítico de superficie: sin transform residual en .fade-up → las tarjetas difuminan el grano (backdrop-filter efectivo)
+const VERSION = 'v1.5.0'; // Sin splash ni animaciones de entrada + caché SWR de tasas en localStorage
 const SHELL_CACHE = `tasasve-shell-${VERSION}`;
 const DATA_CACHE = `tasasve-data-${VERSION}`;
 const ASSET_CACHE = `tasasve-assets-${VERSION}`;
@@ -21,9 +21,6 @@ const SHELL_ASSETS = [
   './icons/favicon.svg',
   './icons/icon.svg',
   './icons/icon-maskable.svg',
-  // Motor Motion (anima el splash): precacheado para que la animación
-  // de bienvenida también funcione en modo offline.
-  'https://cdn.jsdelivr.net/npm/motion@11.13.5/dist/motion.js',
 ];
 
 self.addEventListener('install', (event) => {

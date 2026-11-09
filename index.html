@@ -8,7 +8,7 @@
 
   <!-- PWA -->
   <link rel="manifest" href="manifest.json" />
-  <meta name="theme-color" content="#181818" />
+  <meta name="theme-color" content="#000000" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -23,9 +23,7 @@
 
   <!-- Tailwind CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Motion (motor de Framer Motion, build UMD) — anima el splash 'despegue de cohete' -->
-  <script defer src="https://cdn.jsdelivr.net/npm/motion@11.13.5/dist/motion.js"
-    onload="document.dispatchEvent(new CustomEvent('motion:ready'))"></script>
+  <!-- Sin librería de animación: no hay splash ni entradas que cargar. -->
   <script>
     tailwind.config = {
       theme: {
@@ -69,27 +67,44 @@
       font-variant-numeric: tabular-nums;
     }
 
-    /* ===== Fondo vivo: esferas Lima Ácido sobre gris carbón =====
-     * Anti color-banding SIN blur: la suavidad vive en el gradiente con
-     * interpolación oklch (6 paradas que funden la luz hacia #181818, sin
-     * pasar por transparent). Se anima SOLO transform — nunca opacity/filter. */
+    /* ===== Fondo vivo: esferas Lima Ácido sobre NEGRO PURO =====
+     * El negro lo pone el body (#000000); las luces NO se oscurecen con
+     * ninguna capa global ni blend mode. La suavidad viene de dos cosas:
+     *   1) gradiente de 7 paradas con interpolación oklch (sin escalones),
+     *   2) filter: blur() sobre la propia esfera, para que el borde se funda
+     *      en el negro sin dejar recuadro ni orilla visible.
+     * Se anima SOLO transform (nunca opacity/filter) para no repintar. */
     @keyframes floatOrbs {
-      from { transform: translate3d(35vw, 30vh, 0) scale(1.2); }
-      to   { transform: translate3d(-35vw, -30vh, 0) scale(.85); }
+      from { transform: translate3d(8vw, 10vh, 0) scale(1.05); }
+      to   { transform: translate3d(-8vw, -10vh, 0) scale(.92); }
     }
+    /* Tres masas de luz enormes (antes eran cinco focos pequeños): a este
+       tamaño y con blur extremo el círculo deja de leerse como forma y pasa a
+       ser un resplandor ambiental; lo único que se percibe es color y
+       luminosidad, nunca un borde. */
     .orb {
-      width: 85vw; height: 85vw;
-      min-width: 680px; min-height: 680px;
+      position: absolute;
+      /* MASA DE LUZ, no foco. Dos claves:
+         1) MESETA (20 % del radio al mismo alfa): un pico estrecho lo aplasta
+            el blur y la esfera se ve plana; una meseta sobrevive al desenfoque
+            y conserva un núcleo luminoso.
+         2) CIERRE en 58 %: fuera de ese radio queda NEGRO real, así que entre
+            esfera y esfera no hay velo. El borde se disuelve con el blur, pero
+            la luz no inunda todo el viewport. */
+      width: 110vw; height: 110vw;
+      min-width: 760px; min-height: 760px;
+      max-width: 900px; max-height: 900px;
       border-radius: 50%;
       background: radial-gradient(
         circle at center in oklch,
-        rgba(240, 255, 0, 0.22) 0%,
-        rgba(205, 218, 8, 0.16) 18%,
-        rgba(155, 165, 14, 0.11) 35%,
-        rgba(100, 106, 18, 0.06) 52%,
-        rgba(55, 58, 21, 0.025) 68%,
-        rgba(24, 24, 24, 0) 85%
+        rgba(240, 255, 0, 0.34) 0%,
+        rgba(238, 253, 8, 0.34) 20%,
+        rgba(222, 238, 7, 0.28) 30%,
+        rgba(184, 198, 5, 0.17) 40%,
+        rgba(124, 134, 4, 0.07) 49%,
+        rgba(0, 0, 0, 0) 58%
       );
+      filter: blur(200px);
       transform: translateZ(0);
       will-change: transform;
       backface-visibility: hidden;
@@ -99,65 +114,54 @@
     .orb.orb-b {
       background: radial-gradient(
         circle at center in oklch,
-        rgba(212, 255, 0, 0.22) 0%,
-        rgba(200, 218, 8, 0.16) 18%,
-        rgba(150, 165, 14, 0.11) 35%,
-        rgba(97, 106, 18, 0.06) 52%,
-        rgba(54, 58, 21, 0.025) 68%,
-        rgba(24, 24, 24, 0) 85%
+        rgba(212, 255, 0, 0.33) 0%,
+        rgba(210, 248, 8, 0.33) 20%,
+        rgba(198, 228, 6, 0.27) 30%,
+        rgba(158, 180, 4, 0.165) 40%,
+        rgba(108, 120, 3, 0.065) 49%,
+        rgba(0, 0, 0, 0) 58%
       );
       animation-duration: 5.5s; animation-delay: -2.2s;
       animation-direction: alternate-reverse; /* recorrido opuesto al de A */
     }
-    .orb.orb-c { animation-duration: 6s; animation-delay: -3s; }
-    /* Esferas Púrpura (D y E): MISMA curva anti-banding en oklch, sin blur.
-       Se intercalan con las Lima para crear la atmósfera bicolor. */
-    .orb.orb-d, .orb.orb-e {
+    /* Tercera luz: púrpura, para que el resplandor no sea todo lima */
+    .orb.orb-d {
       background: radial-gradient(
         circle at center in oklch,
-        rgba(128, 70, 195, 0.25) 0%,
-        rgba(108, 58, 168, 0.18) 20%,
-        rgba(82, 44, 128, 0.11) 38%,
-        rgba(56, 33, 84, 0.06) 55%,
-        rgba(36, 26, 48, 0.025) 70%,
-        rgba(24, 24, 24, 0) 85%
+        rgba(160, 128, 238, 0.36) 0%,
+        rgba(144, 114, 214, 0.36) 20%,
+        rgba(120, 94, 180, 0.30) 30%,
+        rgba(84, 64, 128, 0.18) 40%,
+        rgba(46, 34, 70, 0.075) 49%,
+        rgba(0, 0, 0, 0) 58%
       );
+      animation-duration: 5s; animation-delay: -0.8s;
+      animation-direction: alternate-reverse;
     }
-    .orb.orb-d { animation-duration: 5s;   animation-delay: -0.8s; animation-direction: alternate-reverse; }
-    .orb.orb-e { animation-duration: 4.8s; animation-delay: -3.7s; }
     /* Dithering REAL: patrón PNG 128×128 de ruido monocromático 1-bit
-       (píxeles claros/oscuros alternados), repetido y al 4.5% SIN blend.
-       Fuerza la mezcla óptica de los escalones de color y rompe el banding.
-       z-[1] dentro del stacking context -z-10: encima de las esferas,
-       debajo de la UI. */
+       (píxeles claros/oscuros alternados), repetido y al 1.4% SIN blend.
+       Fuerza la mezcla óptica de los escalones de color y rompe el banding
+       sin lavar el negro. z-[1] dentro del stacking context -z-10: encima de
+       las esferas, debajo de la UI. */
     .dither-layer {
       background-image: url("data:image/png;base64,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");
       background-repeat: repeat;
       background-size: 128px 128px;
-      opacity: .045;
+      opacity: .014;
     }
-    /* Móvil: 95vw (bañan la pantalla) y coreografía intercalando Lima/Púrpura */
+    /* Móvil: las tres mismas masas, escaladas al viewport. El blur baja en
+       proporción al tamaño para no borrar la luz por completo en pantallas
+       pequeñas (220 px sobre 500 px de ancho dejaría el fondo negro liso). */
     @media (max-width: 768px) {
-      .orb { width: 95vw; height: 95vw; min-width: 0; min-height: 0; }
-      .orb.orb-a { top: 15%;    left: -12%; }
-      .orb.orb-b { bottom: 20%; right: -14%; }
-      .orb.orb-c { bottom: 32%; left: 16%; }
-      .orb.orb-d { top: 4%;     left: 38%; }
-      .orb.orb-e { bottom: 2%;  right: 2%; }
+      .orb {
+        width: 132vw; height: 132vw;
+        min-width: 0; min-height: 0; max-width: none; max-height: none;
+        filter: blur(120px);
+      }
+      .orb.orb-a { top: -23%; left: -47%; }
+      .orb.orb-b { top: 70%;  left: -15%; bottom: auto; right: auto; }
+      .orb.orb-d { top: 30%;  left: 23%; bottom: auto; right: auto; }
     }
-
-    /* ===== Aparición escalonada: fade-in-up ===== */
-    @keyframes fade-in-up {
-      from { opacity: 0; transform: translateY(16px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-    /* fill: backwards (NO both) — oculta el elemento durante el delay (anti-FOUC)
-       pero NO deja transform/opacity residual tras el fade-in. Un transform
-       residual convertiría al ancestro en backdrop-root (Chromium) y AISLARÍA
-       el backdrop-filter de las tarjetas: dejarían de difuminar el grano del
-       fondo y se verían granulosas. Con backwards, al terminar la animación
-       el elemento vuelve a su estilo base (sin transform, sin stacking context). */
-    .fade-up { animation: fade-in-up .65s cubic-bezier(.21,1.02,.73,1) backwards; }
 
     body {
       touch-action: manipulation;
@@ -190,7 +194,7 @@
     .swap-btn {
       background-color: #1E1E1E;
       border: 1px solid rgba(255, 255, 255, .14);
-      box-shadow: 0 0 0 4px #181818;
+      box-shadow: 0 0 0 4px #000000;
     }
     /* Pastilla de ícono: 38×38, radio 12, íconos 18×18 centrados geométricamente */
     .ios-icon-btn {
@@ -206,18 +210,89 @@
     .ios-icon-btn:focus-visible { outline: 2px solid #F0FF00; outline-offset: 2px; }
     .ios-icon-btn[data-copied] { color: #F0FF00; }
 
+    /* ── Semántica de las dos tarjetas del conversor (cursor + foco) ──
+       El acabado sigue siendo .ios-liquid-glass: estas clases no tocan
+       background, radio, borde base ni backdrop-filter. */
+    /* ── Identificador de moneda: píldora bandera + código ISO ──
+       Sustituye al texto suelto de la esquina: la divisa y su país se leen de
+       un golpe. La de la tarjeta editable va teñida de Volt; la de sólo
+       lectura se queda en cristal neutro para no competir con la de arriba. */
+    .currency-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 3px 9px 3px 8px;
+      border-radius: 9999px;
+      background: rgba(255, 255, 255, .07);
+      border: 1px solid rgba(255, 255, 255, .12);
+      line-height: 1; user-select: none;
+    }
+    /* Bandera: SVG de 16×11 (el emoji de bandera no existe en Windows, que
+       pinta "US"/"VE" en texto; el SVG se ve igual en móvil y escritorio). */
+    .currency-flag {
+      display: block; width: 16px; height: 11px; flex-shrink: 0;
+      border-radius: 2px; overflow: hidden;
+      box-shadow: 0 0 0 1px rgba(255, 255, 255, .16);
+    }
+    .currency-code {
+      font-family: "Space Grotesk", system-ui, sans-serif;
+      font-size: .875rem; font-weight: 700;
+      letter-spacing: .06em; text-transform: uppercase;
+      color: rgba(255, 255, 255, .85);
+    }
+    .amount-card .currency-pill {
+      background: rgba(240, 255, 0, .12);
+      border-color: rgba(240, 255, 0, .32);
+    }
+    .amount-card .currency-code { color: #F0FF00; }
+
+    /* Superior = superficie editable y PROTAGONISTA: cristal un punto más
+       denso que el resto (12/4/6 % en vez de 8/2/4 %) y borde Volt fijo, para
+       que se lea como campo editable y no como un dato más de la pantalla. */
+    .amount-card {
+      cursor: pointer;
+      background: linear-gradient(135deg, rgba(255,255,255,.12) 0%, rgba(255,255,255,.04) 50%, rgba(255,255,255,.06) 100%);
+      border-color: rgba(240, 255, 0, .30);
+      box-shadow:
+        0 0 0 1px rgba(240, 255, 0, .08),
+        0 12px 32px -4px rgba(0, 0, 0, .5),
+        inset 0 1.5px 1px 0 rgba(255, 255, 255, .35),
+        inset 1px 0 1px 0 rgba(255, 255, 255, .15),
+        inset 0 -1px 2px 0 rgba(255, 255, 255, .10);
+      transition: border-color .2s ease, box-shadow .2s ease;
+    }
+    .amount-card input { cursor: text; }
+    /* Anillo Volt sólo mientras el input tiene el foco (:focus-within).
+       Se reescribe box-shadow completo para conservar el bisel interno del
+       cristal; el verde es la ÚNICA señal de que el campo está en edición. */
+    .amount-card:focus-within {
+      border-color: rgba(240, 255, 0, .55);
+      box-shadow:
+        0 0 0 1px rgba(240, 255, 0, .30),
+        0 0 22px -8px rgba(240, 255, 0, .35),
+        0 12px 32px -4px rgba(0, 0, 0, .5),
+        inset 0 1.5px 1px 0 rgba(255, 255, 255, .35),
+        inset 1px 0 1px 0 rgba(255, 255, 255, .15),
+        inset 0 -1px 2px 0 rgba(255, 255, 255, .10);
+    }
+    /* Inferior = sólo lectura: sin cursor de acción, sin hover y sin foco.
+       Los botones de limpiar/copiar mantienen su propio cursor: pointer. */
+    .result-card { cursor: default; }
+
     /* Las tarjetas del conversor NO llevan estilo propio: comparten EXACTAMENTE
        la clase .ios-liquid-glass del módulo superior (mismo background, mismo
        backdrop-filter, mismo borde y radio). El acabado liso de las tres
-       superficies lo garantiza además el fill 'backwards' de .fade-up (sin
-       transform residual que aísle el backdrop-filter — ver comentario arriba). */
+       superficies: al no existir animación de entrada tampoco hay transform
+       residual que pueda aislar el backdrop-filter. */
 
     /* Luz ambiental difusa: el cristal necesita luz real que refractar */
     .glass-ambient { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
     .glass-orb {
       position: absolute; z-index: 0; pointer-events: none; border-radius: 9999px;
-      background: radial-gradient(circle, rgba(240, 255, 0, .16) 0%, transparent 70%);
-      filter: blur(60px);
+      /* Caída suave dentro del propio gradiente (sin blur): el halo se apaga
+         antes del borde y no aclara las orillas de la pantalla. */
+      background: radial-gradient(circle,
+        rgba(240, 255, 0, .14) 0%,
+        rgba(240, 255, 0, .06) 42%,
+        rgba(240, 255, 0, 0) 72%);
     }
     .glass-orb-a { width: 190px; height: 190px; top: -10px; left: 10px; }
     .glass-orb-b { width: 210px; height: 210px; bottom: 90px; right: 10px; }
@@ -292,98 +367,36 @@
     /* ===== Auto-ajuste del monto resultante: el número nunca desborda el glass ===== */
     #result { white-space: nowrap; }
 
+    /* Reloj: los dos puntos de la hora parpadean cada segundo, como un reloj
+       digital de verdad. Solo se anima opacity (no toca layout ni hace reflow). */
+    @keyframes clockColonBlink {
+      0%, 49.9%   { opacity: 1; }
+      50%, 100%   { opacity: 0; }
+    }
+    .clock-colon {
+      animation: clockColonBlink 1s steps(1, end) infinite;
+    }
+
     @media (prefers-reduced-motion: reduce) {
-      .orb, .fade-up { animation: none; }
-      #app-footer { animation: none; opacity: 1; }
+      .orb { animation: none; }
+      .clock-colon { animation: none; }
       * { transition-duration: 0.01ms !important; }
-      /* Sin preferencia de movimiento: sin splash animado */
-      #splash { display: none !important; }
     }
 
-    /* ===== Splash inmersivo (Dark Liquid Glass) ===== */
-    /* Estado inicial pre-animación (anti-FOUC): fuera de pantalla, escala .6, giro en Z.
-       Nota: spring + keyframes en UNA animación requieren la misma lista de funciones
-       de transform (convención de planos) → translateY + rotate + scale en todo el vuelo. */
-    #splash-card-wrap {
-      transform: translateY(100vh) rotate(4deg) scale(.6);
-      opacity: 0;
-    }
-    /* Micro-movimiento orgánico: balanceo sutil en Z mientras asciende (via CSS, compone con el spring) */
-    #splash-card { animation: splash-lean 2.6s ease-in-out; }
-    @keyframes splash-lean {
-      0%   { transform: rotate(0deg); }
-      30%  { transform: rotate(-2.4deg); }
-      62%  { transform: rotate(1.6deg); }
-      85%  { transform: rotate(-0.7deg); }
-      100% { transform: rotate(0deg); }
-    }
-    /* Anillo de gradiente giratorio: Lima Ácido en bucle (ajusta 2.8s para la velocidad) */
-    #splash-ring {
-      background: conic-gradient(from var(--ring-angle, 0deg), #F0FF00, #D4FF00, rgba(240, 255, 0, .25), #F0FF00);
-      animation: splash-spin 2.8s linear infinite;
-    }
-    @keyframes splash-spin { to { --ring-angle: 360deg; } }
-    @property --ring-angle {
-      syntax: '<angle>'; initial-value: 0deg; inherits: false;
-    }
-    /* Barra láser: pulso que barre dentro de su carril ultradelgado */
-    #splash-beam { animation: beam-sweep 1.4s ease-in-out infinite; }
-    @keyframes beam-sweep {
-      0%   { transform: translateX(-120%); opacity: .4; }
-      50%  { transform: translateX(320%); opacity: 1; }
-    }
-
-    /* Footer: permanece invisible 2.5s (no choca con el splash) y hace fade-in suave de 1.5s */
-    #app-footer { animation: footer-in 1.5s ease-out 2.5s forwards; }
-    @keyframes footer-in { to { opacity: 1; } }
+    /* Footer estático: sin animación de entrada (cero delay visual). */
   </style>
 </head>
 
-<body class="min-h-dvh bg-[#181818] font-sans text-white antialiased touch-manipulation">
+<body class="min-h-dvh bg-black font-sans text-white antialiased touch-manipulation">
 
-  <!-- ===== Splash inmersivo (Motion + Canvas FX) — solo primera visita por sesión ===== -->
-  <div id="splash" aria-hidden="true" hidden>
-    <!-- Lienzo blanco hiper-minimalista (textura sutil) + máscara de wipe radial en la salida -->
-    <div id="splash-veil"
-      class="fixed inset-0 z-[60] flex flex-col items-center justify-between overflow-hidden py-12">
-      <!-- Lienzo oscuro (idéntico al fondo de la app): recibe la máscara radial de salida -->
-      <div id="splash-wipe" class="absolute inset-0 bg-zinc-950"
-        style="background-image: radial-gradient(circle at 50% 30%, rgba(240, 255, 0, .10), transparent 55%), radial-gradient(circle at 50% 105%, rgba(240, 255, 0, .07), transparent 45%);"></div>
-      <!-- Sistema de partículas: orbes esmeralda/menta ascendentes en espiral (canvas) -->
-      <canvas id="splash-particles" class="pointer-events-none absolute inset-0 h-full w-full" aria-hidden="true"></canvas>
-
-      <!-- Hero: tarjeta Dark Liquid Glass con isotipo tipográfico propio (alto contraste) -->
-      <div id="splash-card-wrap" class="relative will-change-transform" style="transform-style: preserve-3d; perspective: 900px;">
-        <div id="splash-glow" class="pointer-events-none absolute left-1/2 top-1/2 h-44 w-44 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#F0FF00]/20 blur-3xl opacity-0"></div>
-        <!-- Anillo: conic-gradient esmeralda→menta en bucle, visible como borde iluminado -->
-        <div id="splash-ring" class="pointer-events-none absolute -inset-[3px] rounded-[28px] opacity-0" aria-hidden="true"></div>
-        <div id="splash-card" class="relative inline-flex flex-col items-center justify-center rounded-3xl border border-[#F0FF00]/25 bg-zinc-900/80 p-6 shadow-2xl shadow-[#F0FF00]/15 backdrop-blur-xl will-change-transform">
-          <!-- Isotipo tipográfico: blanco→menta sobre vidrio oscuro (legibilidad impecable) -->
-          <span class="select-none bg-gradient-to-br from-white via-[#f6ffbf] to-[#F0FF00] bg-clip-text text-4xl font-extrabold tracking-tight text-transparent" aria-hidden="true">Bs</span>
-          <span class="mt-1 h-[3px] w-10 rounded-full bg-gradient-to-r from-[#F0FF00] to-[#D4FF00] shadow-[0_0_12px_rgba(240,255,0,.8)]" aria-hidden="true"></span>
-        </div>
-      </div>
-
-      <!-- Identidad tipográfica: blur-in letra por letra + barra láser ultradelgada -->
-      <div id="splash-copy" class="relative text-center opacity-0 will-change-transform">
-        <p id="splash-title" class="text-2xl font-bold tracking-tight text-white" aria-label="CambioVE"></p>
-        <p class="mt-1 text-sm font-medium text-zinc-400">Cargando tasas del día…</p>
-        <div class="mx-auto mt-3 h-[2px] w-40 overflow-hidden rounded-full bg-white/10">
-          <div id="splash-beam" class="h-full w-1/3 rounded-full bg-gradient-to-r from-[#F0FF00] via-[#D4FF00] to-[#EAFF00]"></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ===== Fondo: orbes verdes dinámicos ===== -->
+  <!-- ===== Fondo: orbes de acento vibrantes sobre negro puro ===== -->
   <div aria-hidden="true" class="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
-    <!-- Lima (A, B, C) intercaladas con Púrpura (D, E): atmósfera bicolor -->
-    <div class="orb orb-a absolute -top-32 -left-24"></div>
-    <div class="orb orb-b absolute top-1/3 -right-28"></div>
-    <div class="orb orb-c absolute -bottom-40 left-1/4"></div>
-    <div class="orb orb-d absolute top-[6%] left-[26%]"></div>
-    <div class="orb orb-e absolute bottom-[4%] right-[8%]"></div>
-    <!-- Dithering real: ruido 128×128 al 4.5%, encima de las esferas y debajo de la UI -->
+    <!-- Dos masas lima (arriba-izq. y abajo) y una púrpura (centro-der.):
+         núcleos separados para que quede negro entre ellos -->
+    <div class="orb orb-a absolute top-[-20%] left-[-29%]"></div>
+    <div class="orb orb-d absolute top-[7%] left-[48%]"></div>
+    <div class="orb orb-b absolute top-[56%] left-[8%]"></div>
+    <!-- Dithering real: ruido 128×128 al 1.8%, encima de las esferas y debajo de la UI -->
     <div class="dither-layer pointer-events-none fixed inset-0 z-[1]"></div>
   </div>
 
@@ -398,27 +411,27 @@
 
     <!-- ===== Fecha y hora de HOY en Caracas (UTC−4): SIEMPRE hora de Venezuela,
          sin importar el país o zona horaria del cliente. Texto plano, sin píldora. ===== -->
-    <time id="caracas-now" datetime="" class="fade-up mb-8 block text-center text-sm font-medium tabular-nums tracking-tight text-white/60" style="animation-delay: 0s"><span id="caracas-date-text">Cargando fecha de Caracas…</span></time>
+    <time id="caracas-now" datetime="" class="mb-8 block text-center text-sm font-medium tabular-nums tracking-tight text-white/60"><span id="caracas-date-text">Cargando fecha de Caracas…</span> - <span class="font-bold"><span id="caracas-hh"></span><span class="clock-colon">:</span><span id="caracas-mm"></span></span></time>
 
     <!-- ===== Cotizaciones: UN contenedor horizontal Liquid Glass (3 columnas) =====
          Ancho = mismo contenedor que la calculadora (max-w-md / px-4).
          Las columnas se generan desde RATE_COLUMNS en el JS (DRY). ===== -->
-    <div id="rates-grid" class="rates-glass ios-liquid-glass fade-up w-full" style="animation-delay: .05s"
+    <div id="rates-grid" class="rates-glass ios-liquid-glass w-full"
       role="radiogroup" aria-label="Cotizaciones: toca una tasa para usarla en la calculadora"></div>
     <!-- ===== Calculadora: 2 tarjetas acopladas + botón ↑↓ superpuesto ===== -->
-    <section aria-label="Calculadora de divisas" class="fade-up relative mt-8 flex flex-col gap-2" style="animation-delay: .25s">
+    <section aria-label="Calculadora de divisas" class="relative mt-8 flex flex-col gap-2">
 
       <!-- Tarjeta superior: ENVÍAS (misma estructura de 2 filas que la inferior) -->
-      <div class="ios-liquid-glass rounded-[20px] px-5 py-4">
+      <div id="amount-card" class="amount-card ios-liquid-glass rounded-[20px] px-5 py-4">
         <!-- Fila 1: divisa/tasa de origen (dinámica, arriba a la izquierda) -->
         <div class="flex items-center">
-          <span id="currency-tag" class="text-xs font-semibold uppercase tracking-widest text-white/50">USD</span>
+          <span id="currency-tag" class="currency-pill" aria-label="Dólar estadounidense (USD)"><span class="currency-code">USD</span></span>
         </div>
         <!-- Fila 2: monto + acciones centradas en el mismo eje -->
         <div class="mt-1 flex items-center justify-between gap-3">
           <input id="amount" type="text" inputmode="decimal" value="1"
             placeholder="0,00" aria-label="Monto a convertir"
-            class="w-full min-w-0 bg-transparent text-right font-num text-4xl font-bold tabular-nums tracking-tight text-white outline-none transition-all duration-300 ease-in-out placeholder:text-white/20 caret-transparent sm:text-5xl" />
+            class="w-full min-w-0 bg-transparent text-right font-num text-5xl font-bold tabular-nums tracking-tight text-white outline-none transition-all duration-300 ease-in-out placeholder:text-white/20 caret-transparent sm:text-6xl" />
           <div class="flex shrink-0 items-center gap-2">
             <button id="clear-btn" type="button" class="clear-btn ios-icon-btn ios-glass-btn ios-liquid-glass" aria-label="Limpiar monto">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -453,10 +466,10 @@
       </button>
 
       <!-- Tarjeta inferior: RECIBES (idéntica estructura de 2 filas) -->
-      <div class="ios-liquid-glass rounded-[20px] px-5 py-4">
+      <div class="result-card ios-liquid-glass rounded-[20px] px-5 py-4">
         <!-- Fila 1: tasa activa (dinámica, arriba a la izquierda; espejo de la tarjeta superior) -->
         <div class="flex items-center">
-          <span id="rate-tag" class="text-xs font-semibold uppercase tracking-widest text-white/50"></span>
+          <span id="rate-tag" class="currency-pill" aria-label="Bolívar (VES)"><span class="currency-code">VES</span></span>
         </div>
         <!-- Fila 2: resultado + acciones centradas en el mismo eje -->
         <div class="mt-1 flex items-center justify-between gap-3">
@@ -493,9 +506,9 @@
     </section>
     </div>
 
-    <!-- ===== Footer minimalista: entra con fade retrasado (no choca con el splash) ===== -->
+    <!-- ===== Footer minimalista (estático, sin animación de entrada) ===== -->
     <footer id="app-footer"
-      class="mt-auto w-full bg-gradient-to-t from-black/95 via-black/55 to-transparent py-12 text-center text-[11px] text-white/55 opacity-0">
+      class="mt-auto w-full bg-gradient-to-t from-black/95 via-black/55 to-transparent py-12 text-center text-[11px] text-white/55">
       <strong class="font-bold text-white/90">© 2026</strong> Todos los derechos reservados.
     </footer>
   </main>
@@ -523,198 +536,6 @@
 
   <!-- ==================== Lógica (Vanilla JS) ==================== -->
   <script>
-  /* ════════════════════════════════════════════════════════════════
-   * ✨ SPLASH DE BIENVENIDA (identidad blanca) — Motion (mismo motor de Framer Motion)
-   * Secuencia: despegue fluido del logo (spring) → estela esmeralda →
-   * disolvencia del lienzo blanco hacia la app "Dark Liquid Glass". Solo se reproduce en la
-   * primera visita de la sesión; con prefers-reduced-motion o sin motor
-   * (CDN caído / offline) la app se libera sin bloquearse jamás.
-   * ════════════════════════════════════════════════════════════════ */
-  (() => {
-    'use strict';
-
-    const splash = document.getElementById('splash');
-    if (!splash) return;
-
-    // ?splash-debug=1 → fuerza la reproducción (ignora el candado de sesión) y
-    // conserva el splash al final, marcado, para inspección del estado final.
-    const DEBUG = new URLSearchParams(location.search).has('splash-debug');
-    const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (reduceMotion || (sessionStorage.getItem('tasasve:splash') && !DEBUG)) {
-      splash.remove();
-      return;
-    }
-    try { sessionStorage.setItem('tasasve:splash', '1'); } catch (_) {}
-
-    splash.hidden = false;
-
-    // Título en spans individuales: habilita el blur-in letra por letra (stagger 55ms)
-    const titleEl = document.getElementById('splash-title');
-    if (titleEl && !titleEl.children.length) {
-      'CambioVE'.split('').forEach((ch) => {
-        const s = document.createElement('span');
-        s.textContent = ch;
-        s.style.cssText = 'display:inline-block;opacity:0;will-change:transform,filter;';
-        titleEl.appendChild(s);
-      });
-    }
-
-    let launched = false;
-    const finish = () => {
-      if (window.__splashFXStop) window.__splashFXStop();   // apaga el canvas de partículas
-      if (DEBUG) { splash.dataset.splashFinished = '1'; splash.style.pointerEvents = 'none'; }
-      else splash.remove();
-      document.dispatchEvent(new CustomEvent('splash:done'));
-    };
-    const skip = () => { if (!launched) { launched = true; finish(); } };
-
-    const hasEngine = () => window.Motion && typeof window.Motion.animate === 'function';
-
-    if (!hasEngine()) {
-      // El motor está en defer: esperar su evento; si nunca llega (offline), liberar.
-      document.addEventListener('motion:ready', () => boot(), { once: true });
-      addEventListener('load', () => setTimeout(() => { if (!hasEngine()) skip(); }, 1200));
-      return;
-    }
-    boot();
-
-    /* ── Motor de partículas (canvas): orbes esmeralda/menta que ascienden en espiral
-     *    detrás del logo, con parpadeo y tamaño variables.
-     *    Ajustes rápidos: COLORS (tonos), COUNT (densidad), vy (velocidad), drift (espiral). */
-    function bootFX() {
-      const canvas = document.getElementById('splash-particles');
-      if (!canvas || !canvas.getContext) return;
-      const ctx = canvas.getContext('2d');
-      const COLORS = ['#F0FF00', '#D4FF00', '#EAFF00', '#CCFF33'];   // gama Lima Ácido / Volt
-      let W = 0, H = 0;
-      const dpr = Math.min(devicePixelRatio || 1, 2);
-      W = canvas.clientWidth; H = canvas.clientHeight;
-      canvas.width = W * dpr; canvas.height = H * dpr;
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      const COUNT = Math.min(42, Math.max(16, Math.round(W / 22)));
-      const parts = Array.from({ length: COUNT }, () => ({
-        x: W * (0.5 + (Math.random() - 0.5) * 0.9),
-        y: H + Math.random() * H * 0.6,
-        r: 1.2 + Math.random() * 3.2,        // radio del orbe
-        vy: 26 + Math.random() * 70,         // velocidad de ascenso (px/s)
-        drift: 14 + Math.random() * 46,      // amplitud de la espiral (px)
-        phase: Math.random() * Math.PI * 2,
-        spin: 0.6 + Math.random() * 1.8,     // giro de la espiral (rad/s)
-        alpha: 0.25 + Math.random() * 0.55,
-        color: COLORS[(Math.random() * COLORS.length) | 0],
-      }));
-      let last = performance.now(), alive = true;
-      const tick = (now) => {
-        if (!alive) return;
-        const dt = Math.min(0.05, (now - last) / 1000); last = now;
-        ctx.clearRect(0, 0, W, H);
-        for (const p of parts) {
-          p.y -= p.vy * dt;
-          p.phase += p.spin * dt;
-          if (p.y < -12) { p.y = H + 10; p.x = W * (0.5 + (Math.random() - 0.5) * 0.9); }
-          const x = p.x + Math.sin(p.phase) * p.drift;       // componente espiral
-          const tw = 0.6 + 0.4 * Math.sin(p.phase * 2.1);    // parpadeo (twinkle)
-          ctx.globalAlpha = p.alpha * tw;
-          ctx.fillStyle = p.color;
-          ctx.shadowColor = p.color; ctx.shadowBlur = 10;    // halo de luz
-          ctx.beginPath(); ctx.arc(x, p.y, p.r, 0, Math.PI * 2); ctx.fill();
-        }
-        ctx.globalAlpha = 1; ctx.shadowBlur = 0;
-        requestAnimationFrame(tick);
-      };
-      requestAnimationFrame(tick);
-      window.__splashFXStop = () => { alive = false; };
-    }
-
-    function boot() {
-      if (launched) return;
-      launched = true;
-
-      const { animate } = window.Motion;
-      const $ = (id) => document.getElementById(id);
-      const cardWrap = $('splash-card-wrap');
-      const ring = $('splash-ring');
-      const veil = $('splash-veil');
-      const glow = $('splash-glow');
-      const copy = $('splash-copy');
-
-      // Normaliza: Motion One expone .finished; las controls de Framer son thenables.
-      const whenDone = (ctrl) => (ctrl && ctrl.finished ? ctrl.finished : ctrl);
-
-      let done = false;
-      const finishOnce = () => { if (!done) { done = true; finish(); } };
-      const safety = setTimeout(finishOnce, 8000);         // red de seguridad absoluta (máquinas lentas)
-
-      try {
-        // ── FX: partículas + anillo gradiente (ver #particulas y @keyframes splash-spin) ──
-        bootFX();
-
-        // ── 1) HERO MOTION: spring orgánico pesado (stiffness 75 / damping 14 / mass 1.1) ──
-        //     Inercia al arrancar, aceleración fluida y frenado suave (ζ≈0.77).
-        //     Convención de planos 2D (translateY + rotate + scale) = al CSS anti-FOUC;
-        //     el balanceo orgánico en Z lo aporta .splash-lean en el elemento hijo.
-        const liftoff = animate(cardWrap, {
-          transform: 'translateY(0vh) rotate(0deg) scale(1)',
-          type: 'spring',
-          stiffness: 75,
-          damping: 14,
-          mass: 1.1,
-        });
-        animate(cardWrap, { opacity: [0, 1], duration: 0.4, ease: 'ease-out' });
-
-        // Aura/estela de energía que acompaña el ascenso del logo
-        animate(glow, { opacity: [0, 1, 0.75], scale: [0.5, 1.1, 1.25], duration: 1.9, ease: 'ease-out' });
-
-        whenDone(liftoff).then(() => {
-          if (done) return;
-          cardWrap.style.transform = 'translateY(0vh) rotate(0deg) scale(1)';
-
-          // ── 2) BREATHING: levitación continua de la tarjeta + anillo vivo ──
-          animate(cardWrap, { y: [-4, 4, -4], duration: 3.2, repeat: Infinity, ease: 'ease-in-out' });
-          animate(ring, { opacity: [0, 0.9], duration: 0.6 });
-          animate(glow, { opacity: [0.75, 0.5, 0.75], duration: 3.2, repeat: Infinity, ease: 'ease-in-out' });
-
-          // ── 3) TYPOGRAPHY BLUR-IN: letra por letra con desenfoque progresivo ──
-          const title = $('splash-title');
-          const letras = title.textContent ? Array.from(title.children) : [];
-          letras.forEach((el, i) => {
-            animate(el, {
-              opacity: [0, 1],
-              filter: ['blur(10px)', 'blur(0px)'],
-              y: [8, 0],
-              delay: i * 0.055,
-              duration: 0.5,
-              ease: [0.22, 1, 0.36, 1],
-            });
-          });
-          animate(copy, { opacity: [0, 1], y: [14, 0], duration: 0.5, ease: [0.22, 1, 0.36, 1] });
-
-          // ── 4) SALIDA LIMPIA: disolvencia cinematográfica de TODO el velo (sin círculos) ──
-          //     Fade general + micro zoom, revelando al instante la app ya cargada debajo.
-          setTimeout(() => {
-            if (done) return;
-            animate(copy, { opacity: 0, y: -12, filter: 'blur(6px)', duration: 0.4, ease: 'ease-in' });
-            animate(cardWrap, {
-              transform: 'translateY(0vh) rotate(0deg) scale(1.08)',
-              opacity: 0,
-              duration: 0.6,
-              delay: 0.1,
-              ease: [0.32, 0, 0.67, 0],
-            });
-            whenDone(animate(veil, {
-              opacity: 0,
-              scale: 1.03,
-              duration: 0.8,
-              ease: 'ease-in-out',
-            })).then(finishOnce).catch(finishOnce);
-          }, 1150);   // hold de bienvenida tras el aterrizaje (ajustable)
-        }).catch(finishOnce);
-      } catch (err) {
-        console.error('[splash] secuencia interrumpida; liberando la app:', err);
-        finishOnce();
-      }
-    }
-  })();
 
   (() => {
     'use strict';
@@ -752,6 +573,78 @@
 
     const state = { direction: 'usd-ves', rate: 'bcv' };
 
+    /* ---------- Formato venezolano estricto: 3.650,00 ---------- */
+    const fmt = (n) =>
+      new Intl.NumberFormat('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
+
+    /* ════════════════════════════════════════════════════════════════
+     * 💾 CACHÉ LOCAL · patrón stale-while-revalidate
+     * --------------------------------------------------------------
+     * 1. LECTURA SÍNCRONA al arrancar: la primera pintura ya lleva las
+     *    cotizaciones guardadas; nunca se ve un loader ni un guion.
+     * 2. FRESCURA: dentro del TTL (5 min) NO se hace ninguna petición.
+     * 3. REVALIDACIÓN: si la copia caducó, se pide al servidor en segundo
+     *    plano y solo se repinta si llegó algo válido (stale → fresh).
+     * 4. FALLO DE RED: la caché se conserva intacta; la UI sigue usable
+     *    con el último dato bueno y se reintenta en el siguiente ciclo.
+     * Todo acceso a localStorage va en try/catch: en modo privado o con el
+     * almacenamiento lleno la app funciona igual, solo sin caché.
+     * ════════════════════════════════════════════════════════════════ */
+    const RATES_CACHE_KEY = 'tasasve:rates:v1';
+    const RATES_CACHE_TTL_MS = REFRESH_MS; // misma cadencia que el refresco (5 min)
+
+    let cacheSavedAt = 0;     // timestamp de la copia en uso (0 = sin caché)
+    let ratesArrived = false; // true en cuanto hay datos (caché o red)
+
+    /* Devuelve { savedAt, values } o null. Descarta caché corrupta o de
+       versiones viejas sin romper el arranque. */
+    function readRatesCache() {
+      try {
+        const raw = localStorage.getItem(RATES_CACHE_KEY);
+        if (!raw) return null;
+        const saved = JSON.parse(raw);
+        if (!saved || typeof saved !== 'object' || !saved.values) return null;
+
+        const values = {};
+        for (const key of Object.keys(RATES)) {
+          const value = Number(saved.values[key]);
+          if (Number.isFinite(value) && value > 0) values[key] = value;
+        }
+        if (!Object.keys(values).length) return null;
+        return { savedAt: Number(saved.savedAt) || 0, values };
+      } catch (error) {
+        console.warn('[tasasve] Caché local ilegible, se ignora:', error);
+        return null;
+      }
+    }
+
+    /* Persiste las tasas vigentes (solo números válidos) tras cada éxito. */
+    function writeRatesCache() {
+      try {
+        const values = {};
+        for (const key of Object.keys(RATES)) {
+          if (Number.isFinite(RATES[key].value)) values[key] = RATES[key].value;
+        }
+        if (!Object.keys(values).length) return;
+        cacheSavedAt = Date.now();
+        localStorage.setItem(RATES_CACHE_KEY, JSON.stringify({ savedAt: cacheSavedAt, values }));
+      } catch (error) {
+        console.warn('[tasasve] No se pudo guardar la caché local:', error);
+      }
+    }
+
+    /* Vigencia de la copia: dentro del TTL no se toca la red. */
+    const isCacheFresh = () => cacheSavedAt > 0 && Date.now() - cacheSavedAt < RATES_CACHE_TTL_MS;
+
+    /* Hidratación ANTES de generar las columnas: el HTML inicial ya sale con
+       las cifras, así que no hay parpadeo ni hueco de "—". */
+    const cachedRates = readRatesCache();
+    if (cachedRates) {
+      cacheSavedAt = cachedRates.savedAt;
+      for (const key of Object.keys(cachedRates.values)) RATES[key].value = cachedRates.values[key];
+      ratesArrived = true;
+    }
+
     /* ════════════════════════════════════════════════════════════════
      * 📊 MÓDULO DE COTIZACIONES — DRY
      * Fuente única de verdad de las 3 columnas: el HTML se genera una
@@ -778,10 +671,21 @@
           data-rate-card="${c.id}" aria-label="Tasa ${c.label}">
           <span class="rate-sigla whitespace-nowrap text-xs font-medium uppercase tracking-wider text-white/50">${c.sigla}</span>
           <span class="rate-name whitespace-nowrap flex items-center gap-1 text-sm text-white/80">${c.label}</span>
-          <p id="${c.priceId}" class="rate-price animate-pulse whitespace-nowrap transition-all duration-300 ease-in-out">${moneyHtml('Bs.', '—', 'rate-cur', '')}</p>
+          <p id="${c.priceId}" class="rate-price whitespace-nowrap transition-all duration-300 ease-in-out">${moneyHtml('Bs.', Number.isFinite(RATES[c.id].value) ? fmt(RATES[c.id].value) : '—', 'rate-cur', '')}</p>
         </div>`).join('');
     }
     renderRateColumns();
+
+    /* Repinta solo las cifras (sin reconstruir columnas ni perder foco ni
+       selección): es lo que se ejecuta al revalidar en segundo plano. */
+    function updateRatePrices() {
+      for (const c of RATE_COLUMNS) {
+        const el = document.getElementById(c.priceId);
+        if (!el) continue;
+        const value = RATES[c.id].value;
+        el.innerHTML = moneyHtml('Bs.', Number.isFinite(value) ? fmt(value) : '—', 'rate-cur', '');
+      }
+    }
 
     const $ = (sel) => document.querySelector(sel);
     const els = {
@@ -793,16 +697,32 @@
       result: $('#result'),
       resultDetail: $('#result-detail'),
       rateTag: $('#rate-tag'),
-      bcvPrice: $('#bcv-price'),
-      binPrice: $('#bin-price'),
-      eurPrice: $('#eur-price'),
     };
-    // Mapa clave de tasa → elemento <p> del precio (nombres reales del DOM)
-    const PRICE_ELS = { bcv: els.bcvPrice, binance: els.binPrice, euro: els.eurPrice };
 
-    /* ---------- Formato venezolano estricto: 3.650,00 ---------- */
-    const fmt = (n) =>
-      new Intl.NumberFormat('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
+    /* ---------- Identificador de moneda (píldora) ----------
+     * Bandera + código ISO en el mismo bloque. Fuente única de los tres casos
+     * posibles: USD, EUR y VES. Se pinta del estado, nunca desde el DOM. */
+    const CURRENCY_META = {
+      USD: {
+        name: 'Dólar estadounidense',
+        flag: '<svg class="currency-flag" viewBox="0 0 16 11" aria-hidden="true"><rect width="16" height="11" fill="#F2F2F2"/><g fill="#B22234"><rect width="16" height="1.6"/><rect y="3.2" width="16" height="1.6"/><rect y="6.4" width="16" height="1.6"/><rect y="9.6" width="16" height="1.4"/></g><rect width="7" height="6.4" fill="#3C3B6E"/></svg>',
+      },
+      EUR: {
+        name: 'Euro',
+        flag: '<svg class="currency-flag" viewBox="0 0 16 11" aria-hidden="true"><rect width="16" height="11" fill="#003399"/><circle cx="8" cy="5.5" r="2.7" fill="none" stroke="#FFCC00" stroke-width=".8" stroke-linecap="round" stroke-dasharray=".7 .62"/></svg>',
+      },
+      VES: {
+        name: 'Bolívar',
+        flag: '<svg class="currency-flag" viewBox="0 0 16 11" aria-hidden="true"><rect width="16" height="11" fill="#FFCC00"/><rect y="3.7" width="16" height="3.6" fill="#00247D"/><rect y="7.3" width="16" height="3.7" fill="#CF142B"/><g fill="#fff"><circle cx="5" cy="5.4" r=".5"/><circle cx="7" cy="4.6" r=".5"/><circle cx="9" cy="4.6" r=".5"/><circle cx="11" cy="5.4" r=".5"/><circle cx="6" cy="6.4" r=".5"/><circle cx="10" cy="6.4" r=".5"/></g></svg>',
+      },
+    };
+
+    function setCurrencyPill(el, code) {
+      const meta = CURRENCY_META[code];
+      if (!el || !meta) return;
+      el.innerHTML = meta.flag + `<span class="currency-code">${code}</span>`;
+      el.setAttribute('aria-label', `${meta.name} (${code})`);
+    }
 
     /* ---------- Auto-ajuste tipográfico del resultado ----------
      * Si el monto tiene muchos dígitos, la fuente escala proporcionalmente
@@ -837,6 +757,8 @@
      * ════════════════════════════════════════════════════════════════ */
     const caracasNowEl = document.getElementById('caracas-now');
     const caracasTextEl = document.getElementById('caracas-date-text');
+    const caracasHHEl   = document.getElementById('caracas-hh');
+    const caracasMMEl   = document.getElementById('caracas-mm');
 
     // "martes 13 de octubre de 2026" (formato venezolano, sin coma tras el día)
     const fmtCaracasFullDate = (d) =>
@@ -850,8 +772,12 @@
     function renderCaracasNow() {
       if (!caracasTextEl) return;
       const now = new Date();
-      // Texto plano (sin spans ni pesos): el contraste lo da la clase del <time>.
-      caracasTextEl.textContent = `${fmtCaracasFullDate(now)} - ${fmtCaracasClock(now)}`;
+      // Fecha atenuada (hereda text-white/60 del <time>) y hora en negrita; los
+      // dos puntos van en su propio <span> para que el CSS los haga parpadear.
+      caracasTextEl.textContent = fmtCaracasFullDate(now);
+      const [hh, mm] = fmtCaracasClock(now).split(':');
+      if (caracasHHEl) caracasHHEl.textContent = hh;
+      if (caracasMMEl) caracasMMEl.textContent = mm;
       if (caracasNowEl) {
         caracasNowEl.setAttribute('datetime', now.toISOString()); // instante real en UTC (para máquinas)
         caracasNowEl.setAttribute('title', `Ahora en Caracas (UTC−4) · tu zona: ${Intl.DateTimeFormat().resolvedOptions().timeZone || 'desconocida'}`);
@@ -875,6 +801,10 @@
       const usdToVes = state.direction === 'usd-ves';
       const sourceCurrency = state.rate === 'euro' ? 'EUR' : 'USD';
 
+      // Píldoras: origen arriba, destino abajo (siempre espejo del estado)
+      setCurrencyPill(els.currencyTag, usdToVes ? sourceCurrency : 'VES');
+      setCurrencyPill(els.rateTag, usdToVes ? 'VES' : sourceCurrency);
+
       // Sin datos vivos todavía: nunca se calcula con valores por defecto.
       if (!Number.isFinite(rate)) {
         els.result.innerHTML = '<span class="result-ph">0,00</span>'; // placeholder idéntico al del input superior
@@ -897,8 +827,6 @@
       els.resultDetail.textContent =
         `${fmt(amount)} ${usdToVes ? sourceCurrency : 'VES'} ${usdToVes ? '×' : '÷'} ${fmt(rate)} (${RATES[state.rate].label})`;
 
-      const sourceTag = usdToVes ? sourceCurrency : 'VES';
-      els.currencyTag.textContent = sourceTag;
       fitResultText();
     }
 
@@ -969,7 +897,7 @@
     function clearAmount() {
       els.amount.value = '';
       compute();
-      forceCursorToEnd();
+      forceCursorToEnd({ force: true });
       updateClearButtonVisibility();
     }
 
@@ -980,10 +908,8 @@
       const usdToVes = dir === 'usd-ves';
 
       els.swapLabel.textContent = usdToVes ? 'USD → VES' : 'VES → USD';
-      const sourceBase = state.rate === 'euro' ? 'EUR' : 'USD';
-      els.currencyTag.textContent = usdToVes ? sourceBase : 'VES';
 
-      compute();
+      compute();   // compute() repinta las dos píldoras según la dirección
     }
 
     /* ↑↓: rotación por ESTADO (suma 180° por clic) → el ícono gira por
@@ -996,13 +922,17 @@
       setDirection(state.direction === 'usd-ves' ? 'ves-usd' : 'usd-ves');
     });
 
-    function forceCursorToEnd() {
+    function forceCursorToEnd({ force = false } = {}) {
       const input = els.amount;
       const value = String(input.value ?? '');
       const end = value.length;
 
       if (typeof input.setSelectionRange === 'function') {
         requestAnimationFrame(() => {
+          // Sin 'force', si el foco ya se fue durante el frame (blur justo
+          // después de teclear) no se reabre el campo: evita re-disparar el
+          // vaciado del onFocus y cualquier parpadeo del monto.
+          if (!force && document.activeElement !== input) return;
           input.focus();
           input.setSelectionRange(end, end);
         });
@@ -1013,8 +943,39 @@
     }
 
     /* ---------- Eventos reactivos (sin recargar) ---------- */
-    els.amount.addEventListener('focus', forceCursorToEnd);
+    /* ---------- UX del input de monto ----------
+     * onFocus: si el campo aún muestra el valor por defecto ("1"), se vacía
+     * para que la cantidad nueva se escriba directamente, sin borrar.
+     * onBlur: si se queda sin texto, vuelve a "1" para que el campo nunca
+     * quede vacío en reposo (el resultado siempre tiene un monto visible).
+     * Ambos recalcular en el acto: la tarjeta inferior jamás queda desfasada. */
+    const DEFAULT_AMOUNT = '1';
+
+    els.amount.addEventListener('focus', () => {
+      if (els.amount.value.trim() === DEFAULT_AMOUNT) {
+        els.amount.value = '';
+        compute();
+        updateClearButtonVisibility();
+      }
+      forceCursorToEnd();
+    });
+
+    els.amount.addEventListener('blur', () => {
+      if (els.amount.value.trim() !== '') return;
+      els.amount.value = DEFAULT_AMOUNT;
+      compute();
+      updateClearButtonVisibility();
+    });
+
     els.amount.addEventListener('click', forceCursorToEnd);
+
+    /* La tarjeta superior entera enfoca el input (el cristal es el blanco
+       táctil); los botones de limpiar/copiar quedan fuera del gesto. */
+    const amountCard = document.getElementById('amount-card');
+    amountCard?.addEventListener('click', (event) => {
+      if (event.target.closest('button')) return;
+      els.amount.focus();
+    });
     els.amount.addEventListener('keyup', () => {
       forceCursorToEnd();
       updateClearButtonVisibility();
@@ -1041,11 +1002,8 @@
         card.tabIndex = selected ? 0 : -1;
       });
 
-      // 2) Etiqueta de moneda, tasa activa y recálculo inmediato
-      const sourceBase = rateKey === 'euro' ? 'EUR' : 'USD';
-      els.currencyTag.textContent = state.direction === 'usd-ves' ? sourceBase : 'VES';
-      els.rateTag.textContent = RATES[rateKey].label;   // refleja la tasa elegida
-      // Sin tinte verde: la etiqueta conserva text-white/50 (misma jerarquía que "USD").
+      // 2) Las píldoras de moneda las deriva compute() del estado (dirección
+      //    + tasa), sin duplicar aquí la lógica de origen/destino.
 
       if (focusCard) {
         const active = rateCards.find((c) => c.dataset.rateCard === rateKey);
@@ -1296,7 +1254,6 @@
     }
 
     /* ---------- Parseo y render del payload de tasas ---------- */
-    let ratesArrived = false; // true en cuanto llega cualquier payload (aunque sea parcial)
 
     /* Estado de error de conexión visible en la UI (pie de la calculadora).
      * Se pinta en rojo suave y persiste hasta que una carga vuelva a tener éxito. */
@@ -1305,9 +1262,6 @@
     function setConnectionError(message) {
       lastDetailError = message;
       els.resultDetail.textContent = message;
-      els.bcvPrice.classList.remove('animate-pulse');
-      els.binPrice.classList.remove('animate-pulse');
-      els.eurPrice.classList.remove('animate-pulse');
     }
 
     function clearConnectionError() {
@@ -1315,6 +1269,7 @@
     }
 
     function applyRates(payload) {
+      let applied = 0; // cuántas tasas válidas aportó este payload
       try {
         const list = Array.isArray(payload && payload.rates) ? payload.rates : [];
         const byMarket = {};
@@ -1336,21 +1291,22 @@
           euro: euroRate > 0 ? { mid: euroRate, ...eur } : null,
         };
 
-        // Render uniforme: valor en la columna + loader apagado por tasa
+        // Render uniforme de las 3 columnas en una sola pasada
         for (const [key, rate] of Object.entries(encontradas)) {
           if (!rate) continue;
           RATES[key].value = rate.mid;
-          const priceEl = PRICE_ELS[key];
-          // Prefijo "Bs." tenue + cifra en Space Grotesk: «Bs. 1.008,55» en UNA línea
-          priceEl.innerHTML = moneyHtml('Bs.', fmt(rate.mid), 'rate-cur', '');
-          priceEl.classList.remove('animate-pulse');
+          applied += 1;
         }
+        updateRatePrices();
       } catch (err) {
         // Requerimiento 3: un payload inesperado NUNCA debe dejar la UI colgada.
         console.error('[tasasve] Error procesando las tasas (payload inesperado):', err);
       } finally {
         ratesArrived = true;
         clearConnectionError(); // un payload exitoso limpia cualquier error previo
+        // Solo se re-escribe la caché si el payload aportó alguna cifra válida:
+        // así un JSON vacío no "fresca" artificialmente datos viejos.
+        if (applied) writeRatesCache();
         if (RATES.euro.value == null) {
           console.warn('[tasasve] El payload recibido NO incluyó la tasa del Euro (market "eur_reference" / base "EUR").');
         }
@@ -1358,14 +1314,8 @@
       }
     }
 
-    let lastLoad = 0;
-
-    /* Apaga el estado de carga SIEMPRE: éxito, error de red o payload corrupto. */
+    /* Cierra el ciclo de carga SIEMPRE: éxito, error de red o payload corrupto. */
     function stopLoading() {
-      els.bcvPrice.classList.remove('animate-pulse');
-      els.binPrice.classList.remove('animate-pulse');
-      els.eurPrice.classList.remove('animate-pulse');
-
       // Error de conexión activo: se muestra tal cual (estado rojo persistente)
       if (lastDetailError) {
         els.resultDetail.textContent = lastDetailError;
@@ -1380,32 +1330,49 @@
       }
     }
 
-    async function loadRates() {
-      const now = Date.now();
-      if (now - lastLoad < 30 * 1000) return; // anti-spam al cambiar de pestaña
-      lastLoad = now;
-      try {
-        const payload = await fetchRates();
-        applyRates(payload); // el parseo ya está protegido con try/catch/finally interno
-      } catch (err) {
-        // Estado visual claro en producción: nada de quedarse congelado ni en guion indefinido
-        console.error('[tasasve] No se pudieron obtener las tasas:', err);
-        setConnectionError('Error de conexión con la API');
-      } finally {
-        stopLoading(); // el loader SIEMPRE se apaga, con o sin datos
-      }
+    const hasAnyRate = () => RATE_COLUMNS.some((c) => Number.isFinite(RATES[c.id].value));
+
+    let inFlight = null;  // dedupe: una sola petición en vuelo
+    let lastAttempt = 0;  // anti-spam al cambiar de pestaña
+
+    /* Revalidación (stale-while-revalidate):
+     * 1. Caché vigente → NO se toca la red (la UI ya está completa).
+     * 2. Caché caducada o inexistente → se pide en segundo plano; lo que
+     *    hay en pantalla sigue visible hasta que llega la respuesta.
+     * 3. Error de red → los datos cacheados NO se borran; se reintenta en
+     *    el siguiente ciclo o al volver a la pestaña. */
+    async function loadRates({ force = false } = {}) {
+      if (!force && isCacheFresh()) return;
+      if (inFlight) return inFlight;
+      if (!force && Date.now() - lastAttempt < 30 * 1000) return; // anti-spam
+      lastAttempt = Date.now();
+
+      inFlight = (async () => {
+        try {
+          const payload = await fetchRates();
+          applyRates(payload); // el parseo ya está protegido con try/catch/finally interno
+        } catch (err) {
+          console.error('[tasasve] No se pudieron obtener las tasas:', err);
+          // Con datos en pantalla el error no secuestra la UI: se mantiene la caché.
+          if (!hasAnyRate()) setConnectionError('Sin conexión con la API');
+        } finally {
+          stopLoading(); // cierra el ciclo con o sin datos
+        }
+      })().finally(() => { inFlight = null; });
+
+      return inFlight;
     }
 
-    /* ---------- Arranque ---------- */
-    selectRate(state.rate || 'bcv'); // estado inicial sincronizado: tarjetas + píldoras + cálculo
-    loadRates();
+    /* ---------- Arranque: render inmediato + revalidación condicional ---------- */
+    selectRate(state.rate || 'bcv'); // pinta tarjetas, píldoras y cálculo con la caché ya hidratada
+    loadRates();                      // solo hace red si la caché caducó o no existe
     setInterval(loadRates, REFRESH_MS);
     document.addEventListener('visibilitychange', () => {
-      if (!document.hidden) loadRates();
+      if (!document.hidden) loadRates(); // revalida al volver (si toca)
     });
 
-    // Hook de depuración (no afecta producción): window.__tasasVE.loadRates()
-    window.__tasasVE = { applyRates, loadRates, stopLoading, selectRate, fetchRates, RATES };
+    // Hook de depuración: window.__tasasVE.loadRates({ force: true })
+    window.__tasasVE = { applyRates, loadRates, stopLoading, selectRate, fetchRates, RATES, readRatesCache };
   })();
   </script>
 </body>
