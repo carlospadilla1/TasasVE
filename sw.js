@@ -9,7 +9,7 @@
  *  - Limpieza de caches antiguos al activar.
  * ============================================================ */
 
-const VERSION = 'v1.5.0'; // Sin splash ni animaciones de entrada + caché SWR de tasas en localStorage
+const VERSION = 'v2.7.0'; // Micro-empuje del bloque central: --air-top progresivo hasta 3.5rem
 const SHELL_CACHE = `tasasve-shell-${VERSION}`;
 const DATA_CACHE = `tasasve-data-${VERSION}`;
 const ASSET_CACHE = `tasasve-assets-${VERSION}`;

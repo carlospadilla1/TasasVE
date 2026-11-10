@@ -8,10 +8,10 @@
 
   <!-- PWA -->
   <link rel="manifest" href="manifest.json" />
-  <meta name="theme-color" content="#000000" />
+  <meta name="theme-color" content="#FFFFFF" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="Tasas VE" />
   <link rel="icon" href="icons/favicon.svg" type="image/svg+xml" />
 
@@ -43,172 +43,174 @@
   </script>
 
   <style>
+
     /* Input numérico limpio, sin controles nativos */
     input[type='number']::-webkit-outer-spin-button,
     input[type='number']::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
     input[type='number'] { -moz-appearance: textfield; appearance: textfield; }
 
-    /* Foco accesible coherente con el acento Volt */
-    :focus-visible { outline: 2px solid #F0FF00; outline-offset: 2px; }
-    /* Selección de texto en toda la app: Volt sobre carbón */
-    ::selection { background: #F0FF00; color: #181818; }
-    /* Badge brutalista de estado/tasa bajo la calculadora: bloque sólido Volt
-       con texto carbón, esquinas micro-redondeadas (contrasta con las curvas
-       del Liquid Glass) y cifras tabulares de Space Grotesk. */
+    /* Foco accesible coherente con el acento rojo */
+    :focus-visible { outline: 2px solid #DC2626; outline-offset: 2px; }
+    /* Selección de texto en toda la app: rojo suave sobre granate profundo */
+    ::selection { background: #FEE2E2; color: #7F1D1D; }
+    /* Badge de estado/tasa bajo la calculadora: píldora roja sólida con texto
+       blanco y cifras tabulares de Space Grotesk. Es el único bloque de color
+       pleno de la pantalla, así que ancla la jerarquía del cálculo. */
     .result-badge {
       display: inline-flex; align-items: center; justify-content: center;
       margin: 16px auto 0;
-      padding: 4px 12px;
-      border-radius: 4px;
-      background-color: #F0FF00;
-      color: #181818;
+      padding: 5px 14px;
+      border-radius: 9999px;
+      background-color: #DC2626;
+      color: #FFFFFF;
+      box-shadow: 0 8px 18px -10px rgba(220, 38, 38, .70);
       font-size: 12px; font-weight: 600;
       letter-spacing: .02em;
       font-variant-numeric: tabular-nums;
     }
 
-    /* ===== Fondo vivo: esferas Lima Ácido sobre NEGRO PURO =====
-     * El negro lo pone el body (#000000); las luces NO se oscurecen con
-     * ninguna capa global ni blend mode. La suavidad viene de dos cosas:
-     *   1) gradiente de 7 paradas con interpolación oklch (sin escalones),
-     *   2) filter: blur() sobre la propia esfera, para que el borde se funda
-     *      en el negro sin dejar recuadro ni orilla visible.
-     * Se anima SOLO transform (nunca opacity/filter) para no repintar. */
-    @keyframes floatOrbs {
-      from { transform: translate3d(8vw, 10vh, 0) scale(1.05); }
-      to   { transform: translate3d(-8vw, -10vh, 0) scale(.92); }
-    }
-    /* Tres masas de luz enormes (antes eran cinco focos pequeños): a este
-       tamaño y con blur extremo el círculo deja de leerse como forma y pasa a
-       ser un resplandor ambiental; lo único que se percibe es color y
-       luminosidad, nunca un borde. */
-    .orb {
-      position: absolute;
-      /* MASA DE LUZ, no foco. Dos claves:
-         1) MESETA (20 % del radio al mismo alfa): un pico estrecho lo aplasta
-            el blur y la esfera se ve plana; una meseta sobrevive al desenfoque
-            y conserva un núcleo luminoso.
-         2) CIERRE en 58 %: fuera de ese radio queda NEGRO real, así que entre
-            esfera y esfera no hay velo. El borde se disuelve con el blur, pero
-            la luz no inunda todo el viewport. */
-      width: 110vw; height: 110vw;
-      min-width: 760px; min-height: 760px;
-      max-width: 900px; max-height: 900px;
-      border-radius: 50%;
-      background: radial-gradient(
-        circle at center in oklch,
-        rgba(240, 255, 0, 0.34) 0%,
-        rgba(238, 253, 8, 0.34) 20%,
-        rgba(222, 238, 7, 0.28) 30%,
-        rgba(184, 198, 5, 0.17) 40%,
-        rgba(124, 134, 4, 0.07) 49%,
-        rgba(0, 0, 0, 0) 58%
-      );
-      filter: blur(200px);
-      transform: translateZ(0);
-      will-change: transform;
-      backface-visibility: hidden;
-      animation: floatOrbs 4.5s ease-in-out infinite alternate;
-    }
-    /* Esfera B: toque cálido #D4FF00 con la MISMA curva anti-banding */
-    .orb.orb-b {
-      background: radial-gradient(
-        circle at center in oklch,
-        rgba(212, 255, 0, 0.33) 0%,
-        rgba(210, 248, 8, 0.33) 20%,
-        rgba(198, 228, 6, 0.27) 30%,
-        rgba(158, 180, 4, 0.165) 40%,
-        rgba(108, 120, 3, 0.065) 49%,
-        rgba(0, 0, 0, 0) 58%
-      );
-      animation-duration: 5.5s; animation-delay: -2.2s;
-      animation-direction: alternate-reverse; /* recorrido opuesto al de A */
-    }
-    /* Tercera luz: púrpura, para que el resplandor no sea todo lima */
-    .orb.orb-d {
-      background: radial-gradient(
-        circle at center in oklch,
-        rgba(160, 128, 238, 0.36) 0%,
-        rgba(144, 114, 214, 0.36) 20%,
-        rgba(120, 94, 180, 0.30) 30%,
-        rgba(84, 64, 128, 0.18) 40%,
-        rgba(46, 34, 70, 0.075) 49%,
-        rgba(0, 0, 0, 0) 58%
-      );
-      animation-duration: 5s; animation-delay: -0.8s;
-      animation-direction: alternate-reverse;
-    }
-    /* Dithering REAL: patrón PNG 128×128 de ruido monocromático 1-bit
-       (píxeles claros/oscuros alternados), repetido y al 1.4% SIN blend.
-       Fuerza la mezcla óptica de los escalones de color y rompe el banding
-       sin lavar el negro. z-[1] dentro del stacking context -z-10: encima de
-       las esferas, debajo de la UI. */
-    .dither-layer {
-      background-image: url("data:image/png;base64,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");
+    /* ===== FONDO: un único degradado a pantalla completa =====
+     * Toda la transición vive en el contenedor raíz, no en el pie: con paradas
+     * muy separadas (0/45/75/100) el navegador reparte la mezcla a lo largo de
+     * casi toda la altura y desaparece la sensación de línea dura. El borgoña
+     * final es el mismo #5A1020 del pie.
+     * 0% blanco puro · 45% rosa papel · 75% rosa arcilla · 100% borgoña */
+
+    /* ===== GRANO: capa fija independiente =====
+     * SVG feTurbulence incrustado (sin peticiones). No toca el degradado: es
+     * una capa aparte, por encima del fondo y por debajo del contenido
+     * (tarjetas con z-index 100). pointer-events:none para no bloquear clics. */
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100dvh;
+      pointer-events: none;
+      z-index: 50;
+      opacity: 0.06;
+      /* Sin background-size el SVG (sin width/height propios) se estira al
+         viewport entero y el ruido se ve como manchas; fijándolo a 200px
+         recupera el grano fino que buscábamos. */
+      background-size: 200px 200px;
       background-repeat: repeat;
-      background-size: 128px 128px;
-      opacity: .014;
-    }
-    /* Móvil: las tres mismas masas, escaladas al viewport. El blur baja en
-       proporción al tamaño para no borrar la luz por completo en pantallas
-       pequeñas (220 px sobre 500 px de ancho dejaría el fondo negro liso). */
-    @media (max-width: 768px) {
-      .orb {
-        width: 132vw; height: 132vw;
-        min-width: 0; min-height: 0; max-width: none; max-height: none;
-        filter: blur(120px);
-      }
-      .orb.orb-a { top: -23%; left: -47%; }
-      .orb.orb-b { top: 70%;  left: -15%; bottom: auto; right: auto; }
-      .orb.orb-d { top: 30%;  left: 23%; bottom: auto; right: auto; }
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
     }
 
+    /* Los hijos directos del escenario no deben poder ensanchar el layout con
+       su min-content (un texto ahora mismo podría empujar la columna); así el
+       ancho siempre queda dentro del viewport. */
+    #stage > *,
+    #center > * { min-width: 0; }
+
+    /* Balanceo vertical: el encabezado queda arriba (detrás solo el relleno
+       "--air-top") y el bloque de tarjetas flota centrado en el espacio libre
+       gracias a los márgenes automáticos de #center. El hueco encabezado→
+       tarjetas y el de cálculo→botonera miden igual porque el relleno superior
+       del pie ("--air-dock") es idéntico al margen inferior del encabezado.
+       Sin aire sobrante los márgenes se anulan y el bloque se comprime, así que
+       nunca aparece scroll. */
+    body #stage {
+      gap: 0;
+      padding-top: var(--air-top);
+      padding-bottom: 0;
+    }
+    body #stage > header { margin-bottom: var(--air-dock); }
+    body #center {
+      flex: 0 1 auto;
+      margin-top: auto;
+      margin-bottom: auto;
+    }
+
+    /* El pie ya no pinta color: deja ver el degradado del contenedor raíz. */
+    .dock { position: relative; }
+    /* Separación menú → © dinámica: 11dvh del alto real, entre 5rem y 8rem. Al
+       ser un margen (no un hueco fijo) el navegador lo comprime en pantallas
+       bajas y el pie sigue sin desbordar el 100dvh. */
+    .dock-nav { margin-bottom: clamp(5rem, 11dvh, 8rem); }
+    /* Relleno propio del pie: el © nunca toca el borde inferior de la pantalla. */
+    .dock-inner {
+      padding-top: var(--air-dock);
+      padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+    }
+    .dock-copy { color: rgba(255, 255, 255, .72); }
+
+    /* Los dos puntos del reloj: titileo suave de 1 s. Se anima la opacidad
+       (nunca display ni ancho) para que la cifra no se desplace al parpadear. */
+    @keyframes clockColonBlink {
+      0%, 100% { opacity: 1; }
+      50%      { opacity: .15; }
+    }
+    .clock-colon {
+      display: inline-block;
+      animation: clockColonBlink 1s ease-in-out infinite;
+    }
+
+    html, body { height: 100dvh; }
     body {
+      /* Aire exterior: relleno superior del escenario (encabezado despegado
+         del techo) y relleno superior del pie. Este último debe coincidir con
+         el margen inferior del encabezado para que los dos huecos del bloque
+         central midan lo mismo. Los 2rem base más 1.5rem de empuje bajan el
+         bloque central 12px (la mitad del relleno añadido, porque el resto se
+         lo quita a los márgenes automáticos); sigue sin haber scroll porque el
+         aire sobrante de las pantallas altas es mayor que ese empuje. El
+         empuje entra de forma progresiva a partir de 821px de alto (donde
+         vuelve la tipografía normal) y se topa en los 1.5rem, así que en el
+         límite del breakpoint no aparece ningún salto brusco. */
+      --air-top: calc(2rem + min(1.5rem, max(0px, (100dvh - 821px) * 0.75)));
+      --air-dock: 1rem;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      background: linear-gradient(180deg, #FFFFFF 0%, #FCF5F5 45%, #ECA6A6 75%, #5A1020 100%);
       touch-action: manipulation;
     }
 
     /* ═════════════════════════════════════════════════════════════
-     * iOS LIQUID GLASS — clase reutilizable (HIG / iOS 26)
-     * Bisel interno 3D + borde de refracción + blur saturado.
+     * GLASSMORPHISM CLARO — clima de iOS Liquid Glass, pero sobre papel
+     * Blanco al 60 %, borde negro al 9 % y blur(16px): el reflejo rojo del
+     * fondo se lee a través del cristal sin ensuciar los textos.
      * ═══════════════════════════════════════════════════════════ */
     .ios-liquid-glass {
-      background: linear-gradient(135deg, rgba(255,255,255,.08) 0%, rgba(255,255,255,.02) 50%, rgba(255,255,255,.04) 100%);
-      backdrop-filter: blur(32px) saturate(180%);
-      -webkit-backdrop-filter: blur(32px) saturate(180%);
-      border: 1px solid rgba(255, 255, 255, .14);
+      background: rgba(255, 255, 255, .60);
+      backdrop-filter: blur(20px) saturate(140%);
+      -webkit-backdrop-filter: blur(20px) saturate(140%);
+      border: 1px solid rgba(24, 24, 27, .07);
       box-shadow:
-        0 12px 32px -4px rgba(0, 0, 0, .5),
-        inset 0 1.5px 1px 0 rgba(255, 255, 255, .35),
-        inset 1px 0 1px 0 rgba(255, 255, 255, .15),
-        inset 0 -1px 2px 0 rgba(255, 255, 255, .10);
+        0 12px 30px -14px rgba(24, 24, 27, .22),
+        inset 0 1px 0 rgba(255, 255, 255, .70),
+        inset 0 -1px 2px rgba(24, 24, 27, .03);
     }
-    /* Variante botones: cristal neutro ahumado, borde sutil (se enciende en
-       Volt solo al interactuar) */
+    /* Variante botones: cristal blanco algo más opaco, borde sutil (se enciende
+       en rojo solo al interactuar) */
     .ios-glass-btn {
-      border-color: rgba(255, 255, 255, .12);
-      background: linear-gradient(135deg, rgba(255,255,255,.08) 0%, rgba(255,255,255,.02) 50%, rgba(255,255,255,.05) 100%);
+      border-color: rgba(24, 24, 27, .07);
+      background: rgba(255, 255, 255, .62);
     }
-    /* Botón ↑↓: corte 100% opaco sobre el seam (sin cristal translúcido).
-       Fondo sólido + anillo del color exacto de la página: las líneas de las
-       tarjetas jamás se ven atravesando el círculo. Cero glow verde. */
+    /* Botón ↑↓: círculo rojo sólido sobre el seam. El anillo del color de la
+       página separa el botón de los dos cristales para que ninguna línea de
+       las tarjetas lo atraviese. */
     .swap-btn {
-      background-color: #1E1E1E;
-      border: 1px solid rgba(255, 255, 255, .14);
-      box-shadow: 0 0 0 4px #000000;
+      background-color: #DC2626;
+      border: 1px solid rgba(185, 28, 28, .45);
+      box-shadow: 0 0 0 5px #FCF3F4, 0 10px 24px -8px rgba(220, 38, 38, .55);
     }
+    .swap-btn:hover { background-color: #B91C1C; }
     /* Pastilla de ícono: 38×38, radio 12, íconos 18×18 centrados geométricamente */
     .ios-icon-btn {
       display: inline-flex; align-items: center; justify-content: center;
       width: 38px; height: 38px; flex-shrink: 0;
       border-radius: 12px;
-      color: rgba(255, 255, 255, .7);
+      color: rgba(24, 24, 27, .55);
       cursor: pointer; -webkit-tap-highlight-color: transparent;
       transition: all .2s ease;
     }
-    .ios-icon-btn:hover { color: #F0FF00; border-color: rgba(240, 255, 0, .55); background-color: rgba(240, 255, 0, .07); }
-    .ios-icon-btn:active { transform: scale(.94); color: #F0FF00; border-color: #F0FF00; }
-    .ios-icon-btn:focus-visible { outline: 2px solid #F0FF00; outline-offset: 2px; }
-    .ios-icon-btn[data-copied] { color: #F0FF00; }
+    .ios-icon-btn:hover { color: #DC2626; border-color: rgba(220, 38, 38, .40); background-color: rgba(220, 38, 38, .07); }
+    .ios-icon-btn:active { transform: scale(.94); color: #DC2626; border-color: #DC2626; }
+    .ios-icon-btn:focus-visible { outline: 2px solid #DC2626; outline-offset: 2px; }
+    .ios-icon-btn[data-copied] { color: #DC2626; }
 
     /* ── Semántica de las dos tarjetas del conversor (cursor + foco) ──
        El acabado sigue siendo .ios-liquid-glass: estas clases no tocan
@@ -221,8 +223,8 @@
       display: inline-flex; align-items: center; gap: 6px;
       padding: 3px 9px 3px 8px;
       border-radius: 9999px;
-      background: rgba(255, 255, 255, .07);
-      border: 1px solid rgba(255, 255, 255, .12);
+      background: rgba(255, 255, 255, .78);
+      border: 1px solid rgba(24, 24, 27, .10);
       line-height: 1; user-select: none;
     }
     /* Bandera: SVG de 16×11 (el emoji de bandera no existe en Windows, que
@@ -230,48 +232,45 @@
     .currency-flag {
       display: block; width: 16px; height: 11px; flex-shrink: 0;
       border-radius: 2px; overflow: hidden;
-      box-shadow: 0 0 0 1px rgba(255, 255, 255, .16);
+      box-shadow: 0 0 0 1px rgba(24, 24, 27, .12);
     }
     .currency-code {
       font-family: "Space Grotesk", system-ui, sans-serif;
       font-size: .875rem; font-weight: 700;
       letter-spacing: .06em; text-transform: uppercase;
-      color: rgba(255, 255, 255, .85);
+      color: #18181B;
     }
     .amount-card .currency-pill {
-      background: rgba(240, 255, 0, .12);
-      border-color: rgba(240, 255, 0, .32);
+      background: rgba(220, 38, 38, .08);
+      border-color: rgba(220, 38, 38, .28);
     }
-    .amount-card .currency-code { color: #F0FF00; }
+    .amount-card .currency-code { color: #DC2626; }
 
     /* Superior = superficie editable y PROTAGONISTA: cristal un punto más
-       denso que el resto (12/4/6 % en vez de 8/2/4 %) y borde Volt fijo, para
-       que se lea como campo editable y no como un dato más de la pantalla. */
+       denso que el resto (72 % en vez de 60 %) y borde rojo fijo, para que se
+       lea como campo editable y no como un dato más de la pantalla. */
     .amount-card {
       cursor: pointer;
-      background: linear-gradient(135deg, rgba(255,255,255,.12) 0%, rgba(255,255,255,.04) 50%, rgba(255,255,255,.06) 100%);
-      border-color: rgba(240, 255, 0, .30);
+      background: rgba(255, 255, 255, .78);
+      border-color: rgba(24, 24, 27, .07);
       box-shadow:
-        0 0 0 1px rgba(240, 255, 0, .08),
-        0 12px 32px -4px rgba(0, 0, 0, .5),
-        inset 0 1.5px 1px 0 rgba(255, 255, 255, .35),
-        inset 1px 0 1px 0 rgba(255, 255, 255, .15),
-        inset 0 -1px 2px 0 rgba(255, 255, 255, .10);
+        0 12px 30px -14px rgba(24, 24, 27, .22),
+        inset 0 1px 0 rgba(255, 255, 255, .80),
+        inset 0 -1px 2px rgba(24, 24, 27, .03);
       transition: border-color .2s ease, box-shadow .2s ease;
     }
     .amount-card input { cursor: text; }
-    /* Anillo Volt sólo mientras el input tiene el foco (:focus-within).
+    /* Anillo rojo sólo mientras el input tiene el foco (:focus-within).
        Se reescribe box-shadow completo para conservar el bisel interno del
-       cristal; el verde es la ÚNICA señal de que el campo está en edición. */
+       cristal; el rojo es la ÚNICA señal de que el campo está en edición. */
     .amount-card:focus-within {
-      border-color: rgba(240, 255, 0, .55);
+      border-color: rgba(220, 38, 38, .55);
       box-shadow:
-        0 0 0 1px rgba(240, 255, 0, .30),
-        0 0 22px -8px rgba(240, 255, 0, .35),
-        0 12px 32px -4px rgba(0, 0, 0, .5),
-        inset 0 1.5px 1px 0 rgba(255, 255, 255, .35),
-        inset 1px 0 1px 0 rgba(255, 255, 255, .15),
-        inset 0 -1px 2px 0 rgba(255, 255, 255, .10);
+        0 0 0 1px rgba(220, 38, 38, .28),
+        0 8px 26px -14px rgba(220, 38, 38, .45),
+        0 12px 30px -14px rgba(24, 24, 27, .22),
+        inset 0 1px 0 rgba(255, 255, 255, .80),
+        inset 0 -1px 2px rgba(24, 24, 27, .03);
     }
     /* Inferior = sólo lectura: sin cursor de acción, sin hover y sin foco.
        Los botones de limpiar/copiar mantienen su propio cursor: pointer. */
@@ -283,34 +282,19 @@
        superficies: al no existir animación de entrada tampoco hay transform
        residual que pueda aislar el backdrop-filter. */
 
-    /* Luz ambiental difusa: el cristal necesita luz real que refractar */
-    .glass-ambient { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
-    .glass-orb {
-      position: absolute; z-index: 0; pointer-events: none; border-radius: 9999px;
-      /* Caída suave dentro del propio gradiente (sin blur): el halo se apaga
-         antes del borde y no aclara las orillas de la pantalla. */
-      background: radial-gradient(circle,
-        rgba(240, 255, 0, .14) 0%,
-        rgba(240, 255, 0, .06) 42%,
-        rgba(240, 255, 0, 0) 72%);
-    }
-    .glass-orb-a { width: 190px; height: 190px; top: -10px; left: 10px; }
-    .glass-orb-b { width: 210px; height: 210px; bottom: 90px; right: 10px; }
-
     /* ===== MÓDULO DE COTIZACIONES: contenedor horizontal Liquid Glass =====
      * 1 cristal · grid estricto de 3 columnas iguales · divisores de 1px
      * entre columnas · columnas seleccionables sin sub-tarjetas. */
     .rates-glass {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));   /* 3 iguales, sin colapso de ancho */
-      position: relative;                                 /* se apila sobre la luz ambiental */
       overflow: hidden;
       width: 100%;
       padding: 22px 8px;                                  /* aire vertical: la luz del chip activo respira hasta opacidad 0 */
       border-radius: 20px;
     }
     /* Divisores verticales sutiles: solo en las dos primeras columnas */
-    .rates-glass > .rate-col:not(:last-child) { border-right: 1px solid rgba(255, 255, 255, .07); }
+    .rates-glass > .rate-col:not(:last-child) { border-right: 1px solid rgba(24, 24, 27, .08); }
 
     /* Columna: 3 niveles centrados sobre el mismo eje, sin sub-tarjetas */
     .rate-col {
@@ -326,22 +310,22 @@
     }
     .rate-col:hover { opacity: .8; }
     .rate-col:active { transform: scale(.98); }
-    .rate-col:focus-visible { outline: 2px solid #F0FF00; outline-offset: -2px; border-radius: 12px; }
+    .rate-col:focus-visible { outline: 2px solid #DC2626; outline-offset: -2px; border-radius: 12px; }
     /* Monto: Space Grotesk 700, tabular y compacto (16px; baja a 14px solo en móviles estrechos) */
     .rate-col .rate-price {
       font-family: "Space Grotesk", system-ui, sans-serif;
       font-size: clamp(14px, 4vw, 16px);
       font-weight: 700;
-      color: #fff;
+      color: #18181B;
       font-variant-numeric: tabular-nums;
       letter-spacing: -.02em;
     }
     /* Prefijo monetario "Bs.": jerarquía secundaria (12px / 500 / 55%) */
-    .rate-cur { font-size: .75rem; font-weight: 500; color: rgba(255, 255, 255, .55); margin-right: .25rem; }
+    .rate-cur { font-size: .75rem; font-weight: 500; color: rgba(24, 24, 27, .50); margin-right: .25rem; }
 
     /* Placeholder del resultado: espejo EXACTO del placeholder del input superior
        (mismo gris semitransparente, mismo tamaño heredado de la cifra grande) */
-    .result-ph { color: rgba(255, 255, 255, .2); }
+    .result-ph { color: rgba(24, 24, 27, .22); }
 
     /* Estado activo minimalista: halo radial + píldora luminosa, sin cajas con borde */
     .rate-col::after {
@@ -349,8 +333,8 @@
       position: absolute; left: 50%; bottom: 1px;
       width: 16px; height: 2px; border-radius: 2px;
       transform: translateX(-50%);
-      background: #F0FF00;
-      box-shadow: 0 0 8px #F0FF00;
+      background: #DC2626;
+      box-shadow: 0 0 8px rgba(220, 38, 38, .55);
       opacity: 0; transition: opacity .25s ease;
     }
     .rate-col.rate-selected,
@@ -359,59 +343,116 @@
       /* Destello sin clipping: 'ellipse closest-side' termina en opacidad 0 EXACTAMENTE
          en los 4 bordes del chip → la luz se desvanece por completo antes del borde
          físico del cristal y de los divisores (nunca se corta arriba/abajo). */
-      background: radial-gradient(ellipse closest-side at center, rgba(240, 255, 0, .15) 0%, rgba(240, 255, 0, .075) 38%, rgba(240, 255, 0, .028) 66%, transparent 100%);
+      background: radial-gradient(ellipse closest-side at center, rgba(220, 38, 38, .13) 0%, rgba(220, 38, 38, .065) 38%, rgba(220, 38, 38, .024) 66%, transparent 100%);
     }
-    .rate-col.rate-selected .rate-sigla { color: #F0FF00; font-weight: 600; letter-spacing: .05em; }
+    .rate-col.rate-selected .rate-sigla { color: #DC2626; font-weight: 600; letter-spacing: .05em; }
     .rate-col.rate-selected::after { opacity: 1; }
 
     /* ===== Auto-ajuste del monto resultante: el número nunca desborda el glass ===== */
     #result { white-space: nowrap; }
 
-    /* Reloj: los dos puntos de la hora parpadean cada segundo, como un reloj
-       digital de verdad. Solo se anima opacity (no toca layout ni hace reflow). */
-    @keyframes clockColonBlink {
-      0%, 49.9%   { opacity: 1; }
-      50%, 100%   { opacity: 0; }
+    /* ===== Pantallas bajas (≤760px de alto) =====
+     * Sin scroll de página, el contenido debe caber en el alto disponible; aquí
+     * se comprime tipografía y relleno. Los selectores van con "body" delante
+     * para ganar en especificidad a las utilidades de Tailwind (que se inyectan
+     * después de esta hoja), sin recurrir a !important. */
+    @media (max-height: 820px) {
+      body { --air-top: 12px; --air-dock: 10px; }
+      body #center { gap: 12px; }
+      body #amount { font-size: 2.5rem; }
+      body #result { font-size: 1.875rem; }
+      body .amount-card,
+      body .result-card { padding: 12px 16px; }
+      body .rates-glass { padding: 14px 8px; }
+      body .result-badge { margin-top: 8px; }
+      body .quick-icon { width: 40px; height: 40px; }
+      body .quick-label { font-size: 9px; }
     }
-    .clock-colon {
-      animation: clockColonBlink 1s steps(1, end) infinite;
+
+    /* Aún más bajo (móvil en horizontal, ~545px útiles): un paso extra sin
+       ocultar contenido, solo cerrando rellenos. */
+    @media (max-height: 580px) {
+      body { --air-top: 3px; --air-dock: 6px; }
+      body #center { gap: 8px; }
+      body #caracas-date-text { font-size: 1.4rem; }
+      body .rates-glass { padding: 6px; }
+      body .amount-card,
+      body .result-card { padding: 10px 16px; }
+      /* En pantallas muy bajas el aire del pie se modera para no aplastar
+         las tarjetas: 4rem, aún 16px más que antes. */
+      body .dock-nav { margin-bottom: 4.5rem; }
+      body .result-badge { margin-top: 3px; }
+    }
+
+    /* Suelo para móvil en horizontal (~545px útiles): 4.25rem, el mínimo de
+       aire que aún deja respirar las tarjetas dentro del viewport. */
+    @media (max-height: 560px) {
+      body .dock-nav { margin-bottom: 4.25rem; }
+      body .rates-glass { padding: 10px 8px; }
+      body .result-badge { margin-top: 6px; }
     }
 
     @media (prefers-reduced-motion: reduce) {
-      .orb { animation: none; }
       .clock-colon { animation: none; }
       * { transition-duration: 0.01ms !important; }
     }
+
+    /* ===== Accesos rápidos: ya sobre el borgoña del pie =====
+       Inactivos: aro de cristal blanco al 10 % con icono blanco al 78 % y
+       etiqueta al 62 % (legibles sobre oscuro, sin competir). Activo
+       (Calculadora): círculo rosa suave, icono rojo vibrante y etiqueta
+       blanca en semibold; es el único que se enciende. */
+    .quick-action {
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+      padding: 0; background: none; border: 0; color: #FFFFFF;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .quick-icon {
+      display: grid; place-items: center;
+      width: 52px; height: 52px; border-radius: 999px;
+      background: rgba(255, 255, 255, .10);
+      border: 1px solid rgba(255, 255, 255, .22);
+      -webkit-backdrop-filter: blur(10px);
+      backdrop-filter: blur(10px);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, .18);
+      color: rgba(255, 255, 255, .78);
+      transition: transform .18s ease, background-color .18s ease, border-color .18s ease, color .18s ease;
+    }
+    .quick-action:hover .quick-icon { background: rgba(255, 255, 255, .18); border-color: rgba(255, 255, 255, .34); color: #FFFFFF; }
+    .quick-action:active .quick-icon { transform: scale(.94); }
+    .quick-action:focus-visible .quick-icon { outline: 2px solid #FBD5D9; outline-offset: 3px; }
+    .quick-label { font-size: 10px; line-height: 1.1; letter-spacing: .01em; color: rgba(255, 255, 255, .62); }
+
+    .quick-action.is-active .quick-icon {
+      background: #FBD5D9;
+      border-color: rgba(255, 255, 255, .85);
+      color: #DC2626;
+      box-shadow: 0 0 0 4px rgba(251, 213, 217, .14), 0 10px 22px -10px rgba(0, 0, 0, .55);
+    }
+    .quick-action.is-active .quick-label { color: #FFFFFF; font-weight: 600; }
 
     /* Footer estático: sin animación de entrada (cero delay visual). */
   </style>
 </head>
 
-<body class="min-h-dvh bg-black font-sans text-white antialiased touch-manipulation">
+<body class="relative flex h-[100dvh] flex-col overflow-hidden font-sans text-zinc-900 antialiased touch-manipulation">
 
-  <!-- ===== Fondo: orbes de acento vibrantes sobre negro puro ===== -->
-  <div aria-hidden="true" class="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
-    <!-- Dos masas lima (arriba-izq. y abajo) y una púrpura (centro-der.):
-         núcleos separados para que quede negro entre ellos -->
-    <div class="orb orb-a absolute top-[-20%] left-[-29%]"></div>
-    <div class="orb orb-d absolute top-[7%] left-[48%]"></div>
-    <div class="orb orb-b absolute top-[56%] left-[8%]"></div>
-    <!-- Dithering real: ruido 128×128 al 1.8%, encima de las esferas y debajo de la UI -->
-    <div class="dither-layer pointer-events-none fixed inset-0 z-[1]"></div>
-  </div>
+  <main class="relative z-[100] flex min-h-0 w-full flex-1 flex-col">
+    <div id="stage" class="relative mx-auto flex min-h-0 w-full max-w-md flex-1 flex-col gap-4 overflow-x-hidden overflow-y-auto px-4 pb-3 pt-4">
 
-  <main class="min-h-[100dvh] w-full flex flex-col justify-center pt-8">
-    <div class="relative mx-auto w-full max-w-md px-4 my-auto">
+    <!-- ===== Encabezado dinámico: saludo por hora + fecha compacta en dos líneas.
+         Sin logotipo, sin nombre de la app y sin nombre de usuario. ===== -->
+    <header>
+      <p id="greeting" class="text-sm font-medium tracking-tight text-zinc-600">¡Buen día!</p>
+      <time id="caracas-now" datetime="" class="mt-1 block">
+        <span id="caracas-date-text" class="block text-[1.6rem] font-bold leading-tight tracking-[-0.02em] text-zinc-900 sm:text-3xl">Cargando fecha…</span>
+        <span id="caracas-meta" class="mt-1 block text-xs font-medium tabular-nums tracking-tight text-zinc-500">—</span>
+      </time>
+    </header>
 
-    <!-- Luz ambiental difusa tras los cristales (refracción real) -->
-    <div class="glass-ambient" aria-hidden="true">
-      <span class="glass-orb glass-orb-a"></span>
-      <span class="glass-orb glass-orb-b"></span>
-    </div>
-
-    <!-- ===== Fecha y hora de HOY en Caracas (UTC−4): SIEMPRE hora de Venezuela,
-         sin importar el país o zona horaria del cliente. Texto plano, sin píldora. ===== -->
-    <time id="caracas-now" datetime="" class="mb-8 block text-center text-sm font-medium tabular-nums tracking-tight text-white/60"><span id="caracas-date-text">Cargando fecha de Caracas…</span> - <span class="font-bold"><span id="caracas-hh"></span><span class="clock-colon">:</span><span id="caracas-mm"></span></span></time>
+    <!-- ===== Núcleo flexible: absorbe todo el aire libre y centra las tarjetas
+         entre el encabezado (arriba) y el pie (abajo). ===== -->
+    <div id="center" class="flex min-h-0 flex-1 flex-col justify-center gap-4">
 
     <!-- ===== Cotizaciones: UN contenedor horizontal Liquid Glass (3 columnas) =====
          Ancho = mismo contenedor que la calculadora (max-w-md / px-4).
@@ -419,7 +460,7 @@
     <div id="rates-grid" class="rates-glass ios-liquid-glass w-full"
       role="radiogroup" aria-label="Cotizaciones: toca una tasa para usarla en la calculadora"></div>
     <!-- ===== Calculadora: 2 tarjetas acopladas + botón ↑↓ superpuesto ===== -->
-    <section aria-label="Calculadora de divisas" class="relative mt-8 flex flex-col gap-2">
+    <section aria-label="Calculadora de divisas" class="relative flex flex-col gap-2">
 
       <!-- Tarjeta superior: ENVÍAS (misma estructura de 2 filas que la inferior) -->
       <div id="amount-card" class="amount-card ios-liquid-glass rounded-[20px] px-5 py-4">
@@ -431,7 +472,7 @@
         <div class="mt-1 flex items-center justify-between gap-3">
           <input id="amount" type="text" inputmode="decimal" value="1"
             placeholder="0.00" aria-label="Monto a convertir"
-            class="w-full min-w-0 bg-transparent text-right font-num text-5xl font-bold tabular-nums tracking-tight text-white outline-none transition-all duration-300 ease-in-out placeholder:text-white/20 caret-transparent sm:text-6xl" />
+            class="w-full min-w-0 bg-transparent text-right font-num text-5xl font-bold tabular-nums tracking-tight text-zinc-900 outline-none transition-all duration-300 ease-in-out placeholder:text-zinc-900/25 caret-transparent sm:text-6xl" />
           <div class="flex shrink-0 items-center gap-2">
             <button id="clear-btn" type="button" class="clear-btn ios-icon-btn ios-glass-btn ios-liquid-glass" aria-label="Limpiar monto">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -457,7 +498,7 @@
            gap real entre tarjetas sea exactamente 8px y el botón muerda 20px
            cada borde de forma simétrica (48px − 8px) / 2 = 20. -->
       <button id="swap-btn" type="button" aria-label="Invertir dirección de conversión"
-        class="swap-btn relative z-10 grid h-12 w-12 shrink-0 place-items-center rounded-full p-2 text-[#F0FF00] transition-all duration-300 ease-in-out hover:text-[#EAFF00] active:scale-95"
+        class="swap-btn relative z-10 grid h-12 w-12 shrink-0 place-items-center rounded-full p-2 text-white transition-all duration-300 ease-in-out active:scale-95"
         style="margin: -28px auto;">
           <svg id="swap-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="m3 16 4 4 4-4"/><path d="M7 20V4"/><path d="m21 8-4-4-4 4"/><path d="M17 4v16"/>
@@ -473,7 +514,7 @@
         </div>
         <!-- Fila 2: resultado + acciones centradas en el mismo eje -->
         <div class="mt-1 flex items-center justify-between gap-3">
-          <p id="result" class="w-full min-w-0 whitespace-nowrap text-right font-num text-4xl font-bold tabular-nums tracking-tight text-white sm:text-5xl"><span class="result-ph">0,00</span></p>
+          <p id="result" class="w-full min-w-0 whitespace-nowrap text-right font-num text-4xl font-bold tabular-nums tracking-tight text-zinc-900 sm:text-5xl"><span class="result-ph">0,00</span></p>
           <div class="flex shrink-0 items-center gap-2">
             <button type="button" class="clear-btn ios-icon-btn ios-glass-btn ios-liquid-glass" aria-label="Limpiar cálculo">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -504,35 +545,88 @@
       <!-- Badge de estado/tasa: alto contraste brutalista (Volt sobre carbón) -->
       <p id="result-detail" class="result-badge whitespace-nowrap">Cargando tasas en vivo…</p>
     </section>
-    </div>
 
-    <!-- ===== Footer minimalista (estático, sin animación de entrada) ===== -->
-    <footer id="app-footer"
-      class="mt-auto w-full bg-gradient-to-t from-black/95 via-black/55 to-transparent py-12 text-center text-[11px] text-white/55">
-      <strong class="font-bold text-white/90">© 2026</strong> Todos los derechos reservados.
-    </footer>
+    </div><!-- /#center -->
+
+    </div>
   </main>
 
-  <!-- ===== Banner de instalación PWA ===== -->
-  <div id="install-banner" hidden class="fixed inset-x-0 bottom-0 z-50 px-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
-    <div class="mx-auto max-w-md">
-      <div id="install-banner-inner" class="flex transform items-center gap-3 rounded-2xl border border-white/10 bg-[#1F1F1F]/90 p-4 shadow-2xl backdrop-blur-2xl opacity-0 translate-y-[150%] transition-all duration-500 ease-in-out">
-        <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#F0FF00] text-base font-black text-black select-none" aria-hidden="true">Bs</span>
+  <!-- ===== Pie: menú + instalación + © sobre el tramo final del degradado ===== -->
+  <footer id="app-footer" class="relative z-[100] w-full shrink-0">
+    <div class="dock">
+    <div class="dock-inner relative z-[1] mx-auto w-full max-w-md px-4">
+
+    <!-- ===== Accesos rápidos: 4 círculos sobre el borgoña, Calculadora activa ===== -->
+    <nav aria-label="Accesos rápidos" class="dock-nav grid grid-cols-4 gap-3">
+      <button type="button" class="quick-action" aria-label="Historial de conversiones">
+        <span class="quick-icon" aria-hidden="true">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 12a9 9 0 1 0 3.2-6.9"/>
+            <path d="M3 4v5h5"/>
+            <path d="M12 7.5V12l3 1.8"/>
+          </svg>
+        </span>
+        <span class="quick-label">Historial</span>
+      </button>
+
+      <button type="button" class="quick-action is-active" aria-current="page" aria-label="Calculadora">
+        <span class="quick-icon" aria-hidden="true">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="5" y="3" width="14" height="18" rx="2.5"/>
+            <path d="M8.5 7.5h7"/>
+            <path d="M9 12h.01M12 12h.01M15 12h.01M9 16h.01M12 16h.01M15 16h.01"/>
+          </svg>
+        </span>
+        <span class="quick-label">Calculadora</span>
+      </button>
+
+      <button type="button" class="quick-action" aria-label="Pagar o cobrar">
+        <span class="quick-icon" aria-hidden="true">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2.5" y="6" width="19" height="12" rx="2.5"/>
+            <circle cx="12" cy="12" r="2.4"/>
+            <path d="M6 10.5v3M18 10.5v3"/>
+          </svg>
+        </span>
+        <span class="quick-label">Pagar/Cobrar</span>
+      </button>
+
+      <button type="button" class="quick-action" aria-label="Ajustes">
+        <span class="quick-icon" aria-hidden="true">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 7h9M17 7h3M4 17h3M11 17h9"/>
+            <circle cx="15" cy="7" r="2"/>
+            <circle cx="9" cy="17" r="2"/>
+          </svg>
+        </span>
+        <span class="quick-label">Ajustes</span>
+      </button>
+    </nav>
+
+    <!-- ===== Instalación: card de cristal sobre la base borgoña.
+         Botón BLANCO con texto rojo: el mayor contraste de la zona oscura. ===== -->
+    <div id="install-banner" hidden class="mt-6">
+      <div id="install-banner-inner" class="flex transform items-center gap-3 rounded-2xl border border-white/15 bg-white/10 p-4 opacity-0 translate-y-3 backdrop-blur-xl transition-all duration-300 ease-out">
+        <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white/15 text-base font-black text-white select-none" aria-hidden="true">Bs</span>
         <div class="min-w-0 flex-1">
-          <p class="text-sm font-semibold text-white">Instalar Tasas Venezuela</p>
-          <p id="install-sub" class="text-xs text-white/50">Acceso directo desde tu pantalla de inicio.</p>
+          <p class="text-sm font-semibold text-white">Instalar aplicación</p>
+          <p id="install-sub" class="text-xs text-white/60">Acceso directo desde tu pantalla de inicio.</p>
         </div>
         <button id="install-btn" type="button"
-          class="h-10 shrink-0 rounded-xl bg-[#F0FF00] px-4 text-sm font-bold text-black transition-colors hover:bg-[#D4FF00] active:scale-95">
+          class="h-10 shrink-0 rounded-xl bg-white px-4 text-sm font-bold text-[#B3122A] transition-colors hover:bg-rose-50 active:scale-95">
           Instalar
         </button>
         <button id="install-dismiss" type="button" aria-label="Cerrar"
-          class="grid h-8 w-8 shrink-0 place-items-center rounded-full text-white/50 transition-colors hover:bg-white/10 hover:text-white">
+          class="grid h-8 w-8 shrink-0 place-items-center rounded-full text-white/55 transition-colors hover:bg-white/10 hover:text-white">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
         </button>
       </div>
     </div>
-  </div>
+
+    <p class="dock-copy mt-0 text-center text-[11px]">© 2026 Todos los derechos reservados.</p>
+    </div>
+    </div>
+  </footer>
 
   <!-- ==================== Lógica (Vanilla JS) ==================== -->
   <script>
@@ -669,8 +763,8 @@
       grid.innerHTML = RATE_COLUMNS.map((c, i) => `
         <div class="rate-col" role="radio" aria-checked="${i === 0}" tabindex="${i === 0 ? 0 : -1}"
           data-rate-card="${c.id}" aria-label="Tasa ${c.label}">
-          <span class="rate-sigla whitespace-nowrap text-xs font-medium uppercase tracking-wider text-white/50">${c.sigla}</span>
-          <span class="rate-name whitespace-nowrap flex items-center gap-1 text-sm text-white/80">${c.label}</span>
+          <span class="rate-sigla whitespace-nowrap text-xs font-medium uppercase tracking-wider text-zinc-500">${c.sigla}</span>
+          <span class="rate-name whitespace-nowrap flex items-center gap-1 text-sm text-zinc-700">${c.label}</span>
           <p id="${c.priceId}" class="rate-price whitespace-nowrap transition-all duration-300 ease-in-out">${moneyHtml('Bs.', Number.isFinite(RATES[c.id].value) ? fmt(RATES[c.id].value) : '—', 'rate-cur', '')}</p>
         </div>`).join('');
     }
@@ -747,51 +841,81 @@
       fitRaf = requestAnimationFrame(fitResultText);
     });
 
-    const TZ = 'America/Caracas';
-
     /* ════════════════════════════════════════════════════════════════
-     * 📅 FECHA Y HORA DE HOY EN CARACAS — siempre, sin importar el país
-     * del cliente. Se formatea con locale 'es-VE' y ZONA FIJA
-     * America/Caracas (UTC−4, sin horario de verano): el reloj del
-     * dispositivo solo aporta el instante, nunca la zona.
+     * 📅 ENCABEZADO DINÁMICO — saludo por hora LOCAL + fecha compacta
+     * Saludo y hora salen del MISMO cálculo (Intl 'es-VE' sobre la zona del
+     * dispositivo), así que nunca se contradicen. Formato 12 h sin cero a la
+     * izquierda: “1:17 PM”. El saludo es genérico: sin marca ni usuario.
      * ════════════════════════════════════════════════════════════════ */
-    const caracasNowEl = document.getElementById('caracas-now');
-    const caracasTextEl = document.getElementById('caracas-date-text');
-    const caracasHHEl   = document.getElementById('caracas-hh');
-    const caracasMMEl   = document.getElementById('caracas-mm');
+    const nowEl      = document.getElementById('caracas-now');
+    const greetingEl = document.getElementById('greeting');
+    const dateTextEl = document.getElementById('caracas-date-text');
+    const metaEl     = document.getElementById('caracas-meta');
 
-    // "martes 13 de octubre de 2026" (formato venezolano, sin coma tras el día)
-    const fmtCaracasFullDate = (d) =>
-      new Intl.DateTimeFormat('es-VE', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: TZ })
-        .format(d).replace(/,\s*/, ' ');
+    const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+    const MONTHS_SHORT = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
 
-    // "09:45" (24 h, hora de Caracas)
-    const fmtCaracasClock = (d) =>
-      new Intl.DateTimeFormat('es-VE', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: TZ }).format(d);
+    /* Piezas de la hora local sin depender del idioma del navegador: Intl
+       (es-VE) entrega día de la semana y números; el mes se acorta con el
+       diccionario de arriba porque Intl devuelve “nov.” con punto. */
+    function localParts(d) {
+      const p = {};
+      for (const part of new Intl.DateTimeFormat('es-VE', {
+        weekday: 'long', day: 'numeric', month: 'numeric', year: 'numeric',
+        hour: '2-digit', minute: '2-digit', hour12: true,
+      }).formatToParts(d)) {
+        if (part.type !== 'literal') p[part.type] = part.value;
+      }
+      const hour12 = Number(p.hour);
+      const ampm = /p/i.test(p.dayPeriod || '') ? 'PM' : 'AM';
+      const hour24 = (hour12 % 12) + (ampm === 'PM' ? 12 : 0);
+      return {
+        weekday: p.weekday,
+        day: p.day,
+        month: MONTHS_SHORT[Number(p.month) - 1] || '',
+        year: p.year,
+        hour12, minute: p.minute, ampm, hour24,
+      };
+    }
 
-    function renderCaracasNow() {
-      if (!caracasTextEl) return;
+    /* Saludo genérico por franja horaria: 06–11 día, 12–18 tardes, resto noches. */
+    const greetingFor = (hour24) =>
+      hour24 >= 6 && hour24 < 12 ? '¡Buen día!'
+        : hour24 >= 12 && hour24 < 19 ? '¡Buenas tardes!'
+          : '¡Buenas noches!';
+
+    /* La hora se escribe en tres nodos para que los dos puntos sean el ÚNICO
+       elemento animado: “2026 • 1”, “:”, “17 PM”. */
+    function renderMeta(t) {
+      if (!metaEl) return;
+      const colon = document.createElement('span');
+      colon.className = 'clock-colon';
+      colon.textContent = ':';
+      metaEl.textContent = '';
+      metaEl.append(`${t.year} • ${t.hour12}`, colon, `${t.minute} ${t.ampm}`);
+    }
+
+    function renderHeaderClock() {
+      if (!dateTextEl) return;
       const now = new Date();
-      // Fecha atenuada (hereda text-white/60 del <time>) y hora en negrita; los
-      // dos puntos van en su propio <span> para que el CSS los haga parpadear.
-      caracasTextEl.textContent = fmtCaracasFullDate(now);
-      const [hh, mm] = fmtCaracasClock(now).split(':');
-      if (caracasHHEl) caracasHHEl.textContent = hh;
-      if (caracasMMEl) caracasMMEl.textContent = mm;
-      if (caracasNowEl) {
-        caracasNowEl.setAttribute('datetime', now.toISOString()); // instante real en UTC (para máquinas)
-        caracasNowEl.setAttribute('title', `Ahora en Caracas (UTC−4) · tu zona: ${Intl.DateTimeFormat().resolvedOptions().timeZone || 'desconocida'}`);
+      const t = localParts(now);
+      dateTextEl.textContent = `${cap(t.weekday)}, ${t.day} ${t.month}`;  // “Martes, 10 Nov”
+      renderMeta(t);                                                     // “2026 • 1:17 PM”
+      if (greetingEl) greetingEl.textContent = greetingFor(t.hour24);
+      if (nowEl) {
+        nowEl.setAttribute('datetime', now.toISOString()); // instante real en UTC (para máquinas)
+        nowEl.setAttribute('title', `Hora local · ${Intl.DateTimeFormat().resolvedOptions().timeZone || 'zona desconocida'}`);
       }
     }
 
     // Refresco exacto al cambiar de minuto + al volver a la pestaña (reloj dormido)
     (() => {
       const tick = () => {
-        renderCaracasNow();
+        renderHeaderClock();
         setTimeout(tick, 60000 - (Date.now() % 60000) + 60);
       };
       tick();
-      document.addEventListener('visibilitychange', () => { if (!document.hidden) renderCaracasNow(); });
+      document.addEventListener('visibilitychange', () => { if (!document.hidden) renderHeaderClock(); });
     })();
 
     /* ---------- Cálculo reactivo ---------- */
@@ -911,7 +1035,7 @@
       try {
         await navigator.clipboard.writeText(value);
         icon.innerHTML = CHECK_SVG;
-        button.dataset.copied = 'true';       // CSS [.ios-icon-btn[data-copied]] → Volt #F0FF00
+        button.dataset.copied = 'true';       // CSS [.ios-icon-btn[data-copied]] → rojo #DC2626
         setTimeout(() => {
           icon.innerHTML = COPY_SVG;
           delete button.dataset.copied;       // restaura el color base del hermano (simetría exacta)
@@ -1101,11 +1225,11 @@
     function hideInstallBanner() {
       if (!banner || !bannerInner) return;
       bannerInner.classList.remove('translate-y-0', 'opacity-100');
-      bannerInner.classList.add('translate-y-[150%]', 'opacity-0');
+      bannerInner.classList.add('translate-y-3', 'opacity-0');
       setTimeout(() => {
         banner.hidden = true;
         rememberInstallBannerHidden();
-      }, 400);
+      }, 320);
     }
 
     function showBanner(iosMode = false) {
@@ -1117,13 +1241,13 @@
 
       banner.hidden = false;
       requestAnimationFrame(() => {
-        bannerInner.classList.remove('translate-y-[150%]', 'opacity-0');
+        bannerInner.classList.remove('translate-y-3', 'opacity-0');
         bannerInner.classList.add('translate-y-0', 'opacity-100');
       });
 
       if (iosMode) {
         $('#install-sub').innerHTML =
-          'En iPhone: pulsa <b class="text-[#F0FF00]">Compartir</b> y luego «Añadir a la pantalla de inicio».';
+          'En iPhone: pulsa <b class="font-semibold text-white">Compartir</b> y luego «Añadir a la pantalla de inicio».';
         installBtn.textContent = 'Entendido';
       }
     }
