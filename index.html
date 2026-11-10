@@ -430,7 +430,7 @@
         <!-- Fila 2: monto + acciones centradas en el mismo eje -->
         <div class="mt-1 flex items-center justify-between gap-3">
           <input id="amount" type="text" inputmode="decimal" value="1"
-            placeholder="0,00" aria-label="Monto a convertir"
+            placeholder="0.00" aria-label="Monto a convertir"
             class="w-full min-w-0 bg-transparent text-right font-num text-5xl font-bold tabular-nums tracking-tight text-white outline-none transition-all duration-300 ease-in-out placeholder:text-white/20 caret-transparent sm:text-6xl" />
           <div class="flex shrink-0 items-center gap-2">
             <button id="clear-btn" type="button" class="clear-btn ios-icon-btn ios-glass-btn ios-liquid-glass" aria-label="Limpiar monto">
@@ -796,7 +796,7 @@
 
     /* ---------- Cálculo reactivo ---------- */
     function compute() {
-      const amount = parseFloat(els.amount.value);
+      const amount = parseFloat(normalizeAmount(els.amount.value));
       const rate = RATES[state.rate].value;
       const usdToVes = state.direction === 'usd-ves';
       const sourceCurrency = state.rate === 'euro' ? 'EUR' : 'USD';
@@ -856,6 +856,45 @@
       }
 
       return cleaned;
+    }
+
+    /* ---------- Puerta única del monto: qué puede existir dentro del input ----------
+     * Se aplica en 'input' (cubre tecleo, pegado, autocompletar y dictado) y
+     * antes de cualquier cálculo, así parseFloat nunca recibe basura.
+     * Reglas: solo dígitos y UN punto decimal; la coma se convierte en punto
+     * (teclado numérico de Windows o iOS/Android en es-ES); si llegan coma y
+     * punto juntos, el de más a la derecha es el decimal y el otro separa miles
+     * ("1.234,56" y "1,234.56" → "1234.56"). */
+    function normalizeAmount(raw) {
+      let s = String(raw ?? '');
+      const hasComma = s.includes(',');
+      const hasDot = s.includes('.');
+
+      if (hasComma && hasDot) {
+        const decimal = s.lastIndexOf(',') > s.lastIndexOf('.') ? ',' : '.';
+        const thousands = decimal === ',' ? '.' : ',';
+        s = s.split(thousands).join('').replace(decimal, '.');
+      } else {
+        s = s.replace(/,/g, '.');
+      }
+
+      s = s.replace(/[^\d.]/g, '');   // fuera letras, signos, espacios y guiones
+
+      const dot = s.indexOf('.');     // un solo punto: el primero manda
+      if (dot !== -1) {
+        s = s.slice(0, dot + 1) + s.slice(dot + 1).replace(/\./g, '');
+      }
+
+      return s;
+    }
+
+    // Reescribe el campo solo si cambió algo (evita cursores/repintados inútiles).
+    function normalizeAmountField() {
+      const before = els.amount.value;
+      const after = normalizeAmount(before);
+      if (after === before) return false;
+      els.amount.value = after;
+      return true;
     }
 
     async function copyValueFromButton(button) {
@@ -980,7 +1019,15 @@
       forceCursorToEnd();
       updateClearButtonVisibility();
     });
+    /* Atajo anti-parpadeo: si la tecla inserta texto que no es numérico, no
+       llega a pintarse. El pegado y el dictado sí pasan y los limpia 'input'. */
+    els.amount.addEventListener('beforeinput', (event) => {
+      if (event.inputType !== 'insertText' || event.data == null) return;
+      if (!/^[\d.,]+$/.test(event.data)) event.preventDefault();
+    });
+
     els.amount.addEventListener('input', () => {
+      normalizeAmountField();   // limpia ANTES de calcular: compute() lee un número válido
       compute();
       forceCursorToEnd();
       updateClearButtonVisibility();
