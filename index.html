@@ -7,7 +7,7 @@
   <meta name="description" content="Calculadora y tasas de cambio del dólar en Venezuela (BCV y Binance P2P) en vivo. PWA instalable." />
 
   <link rel="manifest" href="manifest.json" />
-  <meta name="theme-color" content="#FFFFFF" />
+  <meta name="theme-color" content="#242424" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
@@ -118,31 +118,36 @@
       min-height: 100dvh;
       display: flex;
       flex-direction: column;
-      background: linear-gradient(180deg, #FFFFFF 0%, #F2FBF7 45%, #68C39F 75%, #064E3B 100%);
+      background-color: #242424 !important;
+      background-image: linear-gradient(
+        180deg,
+        #242424 0%,
+        #242424 32%,
+        #18392B 58%,
+        #0A6847 80%,
+        #064E3B 100%
+      ) !important;
       touch-action: manipulation;
     }
 
     /* Glass */
     .ios-liquid-glass {
-      background: rgba(255, 255, 255, .75);
-      backdrop-filter: blur(16px) saturate(140%);
-      -webkit-backdrop-filter: blur(16px) saturate(140%);
-      border: 1px solid rgba(24, 24, 27, .07);
-      box-shadow:
-        0 12px 30px -14px rgba(24, 24, 27, .22),
-        inset 0 1px 0 rgba(255, 255, 255, .70),
-        inset 0 -1px 2px rgba(24, 24, 27, .03);
+      background: linear-gradient(145deg, rgba(255, 255, 255, .16) 0%, rgba(255, 255, 255, .08) 100%);
+      backdrop-filter: blur(24px) saturate(150%);
+      -webkit-backdrop-filter: blur(24px) saturate(150%);
+      border: 1px solid rgba(255, 255, 255, .22);
+      box-shadow: 0 10px 28px rgba(0, 0, 0, .22), inset 0 1px 1px rgba(255, 255, 255, .28);
     }
 
     .ios-glass-btn {
-      border-color: rgba(24, 24, 27, .07);
-      background: rgba(255, 255, 255, .62);
+      border-color: rgba(255, 255, 255, .2);
+      background: rgba(255, 255, 255, .14);
     }
 
     .swap-btn {
       background-color: #10B981;
       border: 1px solid rgba(255, 255, 255, .65);
-      box-shadow: 0 0 0 5px #ECFDF5, 0 10px 24px -8px rgba(16, 185, 129, .50);
+      box-shadow: 0 0 0 5px rgba(6, 40, 30, .55), 0 10px 24px -8px rgba(16, 185, 129, .50);
     }
     .swap-btn:hover { background-color: #059669; }
 
@@ -150,50 +155,47 @@
       display: inline-flex; align-items: center; justify-content: center;
       width: 38px; height: 38px; flex-shrink: 0;
       border-radius: 12px;
-      color: rgba(24, 24, 27, .55);
+      color: rgba(255, 255, 255, .8);
       cursor: pointer; -webkit-tap-highlight-color: transparent;
       transition: all .2s ease;
     }
-    .ios-icon-btn:hover { color: #10B981; border-color: rgba(16, 185, 129, .40); background-color: rgba(16, 185, 129, .08); }
-    .ios-icon-btn:active { transform: scale(.94); color: #059669; border-color: #059669; }
-    .ios-icon-btn:focus-visible { outline: 2px solid #10B981; outline-offset: 2px; }
-    .ios-icon-btn[data-copied] { color: #059669; }
+    .ios-icon-btn:hover { color: #FFFFFF; border-color: rgba(255, 255, 255, .28); background-color: rgba(255, 255, 255, .24); }
+    .ios-icon-btn:active { transform: scale(.94); color: #FFFFFF; border-color: rgba(255, 255, 255, .28); }
+    .ios-icon-btn:focus-visible { outline: 2px solid #6EE7B7; outline-offset: 2px; }
+    .ios-icon-btn[data-copied] { color: #6EE7B7; }
 
     .currency-pill {
       display: inline-flex; align-items: center; gap: 6px;
       padding: 3px 9px 3px 8px;
       border-radius: 9999px;
-      background: rgba(255, 255, 255, .78);
-      border: 1px solid rgba(24, 24, 27, .10);
+      background: rgba(255, 255, 255, .16);
+      border: 1px solid rgba(255, 255, 255, .25);
       line-height: 1; user-select: none;
     }
 
     .currency-flag {
       display: block; width: 16px; height: 11px; flex-shrink: 0;
       border-radius: 2px; overflow: hidden;
-      box-shadow: 0 0 0 1px rgba(24, 24, 27, .12);
+      box-shadow: 0 0 0 1px rgba(255, 255, 255, .25);
     }
     .currency-code {
       font-family: "Space Grotesk", system-ui, sans-serif;
       font-size: .875rem; font-weight: 700;
       letter-spacing: .06em; text-transform: uppercase;
-      color: #18181B;
+      color: #FFFFFF;
     }
 
     .amount-card .currency-pill {
-      background: #D1FAE5;
-      border-color: #6EE7B7;
+      background: rgba(16, 185, 129, .18);
+      border-color: #10B981;
     }
-    .amount-card .currency-code { color: #047857; }
+    .amount-card .currency-code { color: #6EE7B7; }
 
     .amount-card {
       cursor: pointer;
-      background: rgba(255, 255, 255, .78);
-      border-color: rgba(24, 24, 27, .07);
-      box-shadow:
-        0 12px 30px -14px rgba(24, 24, 27, .22),
-        inset 0 1px 0 rgba(255, 255, 255, .80),
-        inset 0 -1px 2px rgba(24, 24, 27, .03);
+      background: linear-gradient(145deg, rgba(255, 255, 255, .16) 0%, rgba(255, 255, 255, .08) 100%);
+      border-color: rgba(255, 255, 255, .22);
+      box-shadow: 0 10px 28px rgba(0, 0, 0, .22), inset 0 1px 1px rgba(255, 255, 255, .28);
       transition: border-color .2s ease, box-shadow .2s ease;
     }
     .amount-card input { cursor: text; }
@@ -201,11 +203,10 @@
     .amount-card:focus-within {
       border-color: rgba(16, 185, 129, .55);
       box-shadow:
-        0 0 0 1px rgba(16, 185, 129, .28),
-        0 8px 26px -14px rgba(16, 185, 129, .40),
-        0 12px 30px -14px rgba(24, 24, 27, .22),
-        inset 0 1px 0 rgba(255, 255, 255, .80),
-        inset 0 -1px 2px rgba(24, 24, 27, .03);
+        0 0 0 1px rgba(16, 185, 129, .35),
+        0 8px 26px -14px rgba(16, 185, 129, .45),
+        0 12px 32px rgba(0, 0, 0, .28),
+        inset 0 1px 0 rgba(255, 255, 255, .18);
     }
 
     .result-card { cursor: default; }
@@ -220,7 +221,7 @@
       border-radius: 20px;
     }
 
-    .rates-glass > .rate-col:not(:last-child) { border-right: 1px solid rgba(24, 24, 27, .08); }
+    .rates-glass > .rate-col:not(:last-child) { border-right: 1px solid rgba(255, 255, 255, .15); }
 
     .rate-col {
       position: relative;
@@ -230,10 +231,10 @@
       white-space: nowrap;                                
       text-align: center;
       cursor: pointer; -webkit-tap-highlight-color: transparent;
-      opacity: .5;                                        
+      opacity: .78;                                        
       transition: all .25s cubic-bezier(.4, 0, .2, 1);
     }
-    .rate-col:hover { opacity: .8; }
+    .rate-col:hover { opacity: 1; }
     .rate-col:active { transform: scale(.98); }
     .rate-col:focus-visible { outline: 2px solid #10B981; outline-offset: -2px; border-radius: 12px; }
 
@@ -241,31 +242,31 @@
       font-family: "Space Grotesk", system-ui, sans-serif;
       font-size: clamp(14px, 4vw, 16px);
       font-weight: 700;
-      color: #18181B;
+      color: #FFFFFF;
       font-variant-numeric: tabular-nums;
       letter-spacing: -.02em;
     }
 
-    .rate-cur { font-size: .75rem; font-weight: 500; color: rgba(24, 24, 27, .50); margin-right: .25rem; }
+    .rate-cur { font-size: .75rem; font-weight: 500; color: rgba(255, 255, 255, .6); margin-right: .25rem; }
 
-    .result-ph { color: rgba(24, 24, 27, .22); }
+    .result-ph { color: rgba(255, 255, 255, .28); }
 
     .rate-col::after {
       content: '';
       position: absolute; left: 50%; bottom: 1px;
       width: 16px; height: 2px; border-radius: 2px;
       transform: translateX(-50%);
-      background: #10B981;
-      box-shadow: 0 0 8px rgba(16, 185, 129, .55);
+      background: #34D399;
+      box-shadow: 0 0 8px rgba(52, 211, 153, .55);
       opacity: 0; transition: opacity .25s ease;
     }
     .rate-col.rate-selected,
     .rate-col.rate-selected:hover {
       opacity: 1;
 
-      background: radial-gradient(ellipse closest-side at center, rgba(16, 185, 129, .14) 0%, rgba(16, 185, 129, .07) 38%, rgba(16, 185, 129, .026) 66%, transparent 100%);
+      background: radial-gradient(ellipse closest-side at center, rgba(52, 211, 153, .22) 0%, rgba(52, 211, 153, .10) 38%, rgba(52, 211, 153, .04) 66%, transparent 100%);
     }
-    .rate-col.rate-selected .rate-sigla { color: #059669; font-weight: 600; letter-spacing: .05em; }
+    .rate-col.rate-selected .rate-sigla { color: #34D399; font-weight: 600; letter-spacing: .05em; }
     .rate-col.rate-selected::after { opacity: 1; }
 
     #result { white-space: nowrap; }
@@ -304,6 +305,7 @@
     @media (prefers-reduced-motion: reduce) {
       .clock-colon { animation: none; }
       .ornament { animation: none; }
+      .bauble-impulse { animation: none !important; }
       * { transition-duration: 0.01ms !important; }
     }
 
@@ -349,9 +351,9 @@
       z-index: 10;
     }
 
-    .ornament {
-      position: absolute;
-      top: 0;
+    .ornament { position: absolute; top: 0; }
+
+    .ornament-swing {
       transform-origin: 50% 0%;
       animation-name: ornamentSwing;
       animation-timing-function: cubic-bezier(0.45, 0.05, 0.55, 0.95);
@@ -360,16 +362,45 @@
       will-change: transform;
     }
 
-    .ornament--far { animation-name: ornamentSwingFar; }
+    .ornament--far .ornament-swing { animation-name: ornamentSwingFar; }
 
     .ornament-thread {
       display: block;
       width: .5px;
       margin: 0 auto;
-      background: linear-gradient(180deg, rgba(0, 0, 0, .12) 0%, rgba(0, 0, 0, .01) 100%);
+      background: linear-gradient(180deg, rgba(255, 255, 255, .28) 0%, rgba(255, 255, 255, .05) 100%);
     }
 
     .ornament-ball { display: block; }
+
+    .bauble-impulse {
+      transform-box: view-box;
+      transform-origin: 50% 0%;
+      will-change: transform;
+    }
+
+    .bauble-impulse.is-bouncing {
+      animation: smooth-nudge 1.6s cubic-bezier(0.25, 1, 0.5, 1) both;
+    }
+
+    .ornament:has(.bauble-impulse.is-bouncing) .ornament-sparkle {
+      animation: sparkle-flash 1.1s ease-out;
+    }
+
+    @keyframes smooth-nudge {
+      0%   { transform: rotate(0deg); }
+      20%  { transform: rotate(9deg); }
+      45%  { transform: rotate(-6.5deg); }
+      68%  { transform: rotate(3.5deg); }
+      85%  { transform: rotate(-1.5deg); }
+      100% { transform: rotate(0deg); }
+    }
+
+    @keyframes sparkle-flash {
+      0%   { opacity: .2; }
+      40%  { opacity: .95; }
+      100% { opacity: .7; }
+    }
 
     .ornament-sparkle {
       position: absolute;
@@ -378,29 +409,50 @@
       animation: twinkle 3.4s ease-in-out infinite;
     }
 
-    .ornament-1 { left: 62%; animation-duration: 6.7s; animation-delay: -1.2s; }
+    .ornament-1 { left: 62%; filter: blur(2.5px) drop-shadow(0 0 12px rgba(16, 185, 129, .35)); opacity: .85; }
+    .ornament-1 .ornament-swing { animation-duration: 6.7s; animation-delay: -1.2s; }
     .ornament-1 .ornament-thread { height: 62px; }
-    .ornament-1 .ornament-ball   { width: 44px; height: 44px; filter: blur(2.5px); opacity: .65; }
+    .ornament-1 .ornament-ball { width: 44px; height: 44px; }
 
-    .ornament-2 { left: 78%; animation-duration: 5.2s; animation-delay: -2.8s; }
+    .ornament-2 { left: 78%; filter: blur(2.5px) drop-shadow(0 0 12px rgba(245, 158, 11, .35)); opacity: .85; }
+    .ornament-2 .ornament-swing { animation-duration: 5.2s; animation-delay: -2.8s; }
     .ornament-2 .ornament-thread { height: 48px; }
-    .ornament-2 .ornament-ball   { width: 40px; height: 40px; filter: blur(2.5px); opacity: .65; }
+    .ornament-2 .ornament-ball { width: 40px; height: 40px; }
 
-    .ornament-3 { left: 93%; animation-duration: 7.9s; animation-delay: -3.6s; }
+    .ornament-3 { left: 93%; filter: blur(2.5px) drop-shadow(0 0 12px rgba(239, 68, 68, .35)); opacity: .85; }
+    .ornament-3 .ornament-swing { animation-duration: 7.9s; animation-delay: -3.6s; }
     .ornament-3 .ornament-thread { height: 30px; }
-    .ornament-3 .ornament-ball   { width: 36px; height: 36px; filter: blur(2.5px); opacity: .65; }
+    .ornament-3 .ornament-ball { width: 36px; height: 36px; }
 
-    .ornament-4 { left: 3%;  animation-duration: 9.1s; animation-delay: -4.5s; }
+    .ornament-4 { left: 12%; filter: blur(6px) drop-shadow(0 0 10px rgba(245, 158, 11, .30)); opacity: .50; }
+    .ornament-4 .ornament-swing { animation-duration: 9.1s; animation-delay: -4.5s; }
     .ornament-4 .ornament-thread { height: 34px; }
-    .ornament-4 .ornament-ball   { width: 22px; height: 22px; filter: blur(6px); opacity: .35; }
+    .ornament-4 .ornament-ball { width: 22px; height: 22px; }
 
-    .ornament-5 { left: 70%; animation-duration: 9.1s; animation-delay: -6.2s; }
+    .ornament-5 { left: 70%; filter: blur(6px) drop-shadow(0 0 10px rgba(239, 68, 68, .30)); opacity: .50; }
+    .ornament-5 .ornament-swing { animation-duration: 9.1s; animation-delay: -6.2s; }
     .ornament-5 .ornament-thread { height: 20px; }
-    .ornament-5 .ornament-ball   { width: 18px; height: 18px; filter: blur(6px); opacity: .35; }
+    .ornament-5 .ornament-ball { width: 18px; height: 18px; }
 
-    .ornament-6 { left: 87%; animation-duration: 7.9s; animation-delay: -5.1s; }
+    .ornament-6 { left: 87%; filter: blur(6px) drop-shadow(0 0 10px rgba(16, 185, 129, .30)); opacity: .50; }
+    .ornament-6 .ornament-swing { animation-duration: 7.9s; animation-delay: -5.1s; }
     .ornament-6 .ornament-thread { height: 26px; }
-    .ornament-6 .ornament-ball   { width: 26px; height: 26px; filter: blur(6px); opacity: .35; }
+    .ornament-6 .ornament-ball { width: 26px; height: 26px; }
+
+    .ornament-7 { left: 24%; filter: blur(6px) drop-shadow(0 0 10px rgba(16, 185, 129, .30)); opacity: .50; }
+    .ornament-7 .ornament-swing { animation-duration: 8.3s; animation-delay: -3.1s; }
+    .ornament-7 .ornament-thread { height: 40px; }
+    .ornament-7 .ornament-ball { width: 20px; height: 20px; }
+
+    .ornament-8 { left: 2%; filter: blur(2.5px) drop-shadow(0 0 12px rgba(239, 68, 68, .35)); opacity: .85; }
+    .ornament-8 .ornament-swing { animation-duration: 6.7s; animation-delay: -2.1s; }
+    .ornament-8 .ornament-thread { height: 24px; }
+    .ornament-8 .ornament-ball { width: 38px; height: 38px; }
+
+    .ornament-9 { left: 36%; filter: blur(6px) drop-shadow(0 0 10px rgba(239, 68, 68, .30)); opacity: .50; }
+    .ornament-9 .ornament-swing { animation-duration: 9.1s; animation-delay: -6.9s; }
+    .ornament-9 .ornament-thread { height: 30px; }
+    .ornament-9 .ornament-ball { width: 24px; height: 24px; }
 
     .sparkle-a { left: -14px; top: 46px;  width: 9px; height: 9px; }
     .sparkle-b { right: -12px; top: 64px; width: 7px; height: 7px; animation-delay: -1.1s; }
@@ -458,83 +510,158 @@
 
   <div class="christmas-bg" aria-hidden="true">
 
+    <div class="ornament ornament-8">
+      <div class="ornament-swing">
+        <div class="bauble-impulse">
+        <span class="ornament-thread"></span>
+        <svg class="ornament-ball" viewBox="0 0 48 48">
+          <defs><radialGradient id="orbG" cx="34%" cy="26%" r="78%">
+            <stop offset="0%" stop-color="#FCA5A5"/><stop offset="50%" stop-color="#EF4444"/><stop offset="100%" stop-color="#991B1B"/>
+          </radialGradient></defs>
+          <rect x="20" y="1" width="8" height="4" rx="1.5" fill="#FDE68A"/>
+          <circle cx="24" cy="28" r="19" fill="url(#orbG)"/>
+          <ellipse cx="16" cy="19" rx="6" ry="4" fill="#FFFFFF" opacity=".45"/>
+          <ellipse cx="18" cy="21" rx="2.2" ry="1.4" fill="#FFFFFF" opacity=".9"/>
+        </svg>
+        </div>
+      </div>
+      <svg class="ornament-sparkle sparkle-a" viewBox="0 0 24 24"><path d="M12 0 13.6 10.4 24 12 13.6 13.6 12 24 10.4 13.6 0 12 10.4 10.4Z"/></svg>
+    </div>
+
+    <div class="ornament ornament--far ornament-7">
+      <div class="ornament-swing">
+        <div class="bauble-impulse">
+        <span class="ornament-thread"></span>
+        <svg class="ornament-ball" viewBox="0 0 48 48">
+          <defs><radialGradient id="orbH" cx="34%" cy="26%" r="78%">
+            <stop offset="0%" stop-color="#6EE7B7"/><stop offset="45%" stop-color="#10B981"/><stop offset="100%" stop-color="#065F46"/>
+          </radialGradient></defs>
+          <rect x="20" y="1" width="8" height="4" rx="1.5" fill="#FDE68A"/>
+          <circle cx="24" cy="28" r="19" fill="url(#orbH)"/>
+          <ellipse cx="16" cy="19" rx="6" ry="4" fill="#FFFFFF" opacity=".30"/>
+        </svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="ornament ornament--far ornament-9">
+      <div class="ornament-swing">
+        <div class="bauble-impulse">
+        <span class="ornament-thread"></span>
+        <svg class="ornament-ball" viewBox="0 0 48 48">
+          <defs><radialGradient id="orbI" cx="34%" cy="26%" r="78%">
+            <stop offset="0%" stop-color="#FCA5A5"/><stop offset="50%" stop-color="#EF4444"/><stop offset="100%" stop-color="#991B1B"/>
+          </radialGradient></defs>
+          <rect x="20" y="1" width="8" height="4" rx="1.5" fill="#FDE68A"/>
+          <circle cx="24" cy="28" r="19" fill="url(#orbI)"/>
+          <ellipse cx="16" cy="19" rx="6" ry="4" fill="#FFFFFF" opacity=".22"/>
+        </svg>
+        </div>
+      </div>
+      <svg class="ornament-sparkle sparkle-b" viewBox="0 0 24 24"><path d="M12 0 13.6 10.4 24 12 13.6 13.6 12 24 10.4 13.6 0 12 10.4 10.4Z"/></svg>
+    </div>
+
     <div class="ornament ornament-1">
-      <span class="ornament-thread"></span>
-      <svg class="ornament-ball" viewBox="0 0 48 48">
-        <defs><radialGradient id="orbA" cx="34%" cy="26%" r="78%">
-          <stop offset="0%" stop-color="#059669"/><stop offset="45%" stop-color="#064E3B"/><stop offset="100%" stop-color="#022C22"/>
-        </radialGradient></defs>
-        <rect x="20" y="1" width="8" height="4" rx="1.5" fill="#FDE68A"/>
-        <circle cx="24" cy="28" r="19" fill="url(#orbA)"/>
-        <ellipse cx="16" cy="19" rx="6" ry="4" fill="#FFFFFF" opacity=".38"/>
-        <ellipse cx="18" cy="21" rx="2.4" ry="1.5" fill="#FFFFFF" opacity=".85"/>
-      </svg>
+      <div class="ornament-swing">
+        <div class="bauble-impulse">
+        <span class="ornament-thread"></span>
+        <svg class="ornament-ball" viewBox="0 0 48 48">
+          <defs><radialGradient id="orbA" cx="34%" cy="26%" r="78%">
+            <stop offset="0%" stop-color="#6EE7B7"/><stop offset="45%" stop-color="#10B981"/><stop offset="100%" stop-color="#065F46"/>
+          </radialGradient></defs>
+          <rect x="20" y="1" width="8" height="4" rx="1.5" fill="#FDE68A"/>
+          <circle cx="24" cy="28" r="19" fill="url(#orbA)"/>
+          <ellipse cx="16" cy="19" rx="6" ry="4" fill="#FFFFFF" opacity=".38"/>
+          <ellipse cx="18" cy="21" rx="2.4" ry="1.5" fill="#FFFFFF" opacity=".85"/>
+        </svg>
+        </div>
+      </div>
       <svg class="ornament-sparkle sparkle-a" viewBox="0 0 24 24"><path d="M12 0 13.6 10.4 24 12 13.6 13.6 12 24 10.4 13.6 0 12 10.4 10.4Z"/></svg>
       <svg class="ornament-sparkle sparkle-c" viewBox="0 0 24 24"><path d="M12 0 13.6 10.4 24 12 13.6 13.6 12 24 10.4 13.6 0 12 10.4 10.4Z"/></svg>
     </div>
 
     <div class="ornament ornament-2">
-      <span class="ornament-thread"></span>
-      <svg class="ornament-ball" viewBox="0 0 48 48">
-        <defs><radialGradient id="orbB" cx="34%" cy="26%" r="78%">
-          <stop offset="0%" stop-color="#EF4444"/><stop offset="50%" stop-color="#7F1D1D"/><stop offset="100%" stop-color="#450A0A"/>
-        </radialGradient></defs>
-        <rect x="20" y="1" width="8" height="4" rx="1.5" fill="#FDE68A"/>
-        <circle cx="24" cy="28" r="19" fill="url(#orbB)"/>
-        <ellipse cx="16" cy="19" rx="6" ry="4" fill="#FFFFFF" opacity=".20"/>
-        <ellipse cx="18" cy="21" rx="2.2" ry="1.4" fill="#FFFFFF" opacity=".45"/>
-      </svg>
+      <div class="ornament-swing">
+        <div class="bauble-impulse">
+        <span class="ornament-thread"></span>
+        <svg class="ornament-ball" viewBox="0 0 48 48">
+          <defs><radialGradient id="orbB" cx="34%" cy="26%" r="78%">
+            <stop offset="0%" stop-color="#FEF08A"/><stop offset="50%" stop-color="#F59E0B"/><stop offset="100%" stop-color="#B45309"/>
+          </radialGradient></defs>
+          <rect x="20" y="1" width="8" height="4" rx="1.5" fill="#FDE68A"/>
+          <circle cx="24" cy="28" r="19" fill="url(#orbB)"/>
+          <ellipse cx="16" cy="19" rx="6" ry="4" fill="#FFFFFF" opacity=".20"/>
+          <ellipse cx="18" cy="21" rx="2.2" ry="1.4" fill="#FFFFFF" opacity=".45"/>
+        </svg>
+        </div>
+      </div>
       <svg class="ornament-sparkle sparkle-b" viewBox="0 0 24 24"><path d="M12 0 13.6 10.4 24 12 13.6 13.6 12 24 10.4 13.6 0 12 10.4 10.4Z"/></svg>
     </div>
 
     <div class="ornament ornament-3">
-      <span class="ornament-thread"></span>
-      <svg class="ornament-ball" viewBox="0 0 48 48">
-        <defs><radialGradient id="orbC" cx="34%" cy="26%" r="78%">
-          <stop offset="0%" stop-color="#F87171"/><stop offset="50%" stop-color="#DC2626"/><stop offset="100%" stop-color="#991B1B"/>
-        </radialGradient></defs>
-        <rect x="20" y="1" width="8" height="4" rx="1.5" fill="#FDE68A"/>
-        <circle cx="24" cy="28" r="19" fill="url(#orbC)"/>
-        <ellipse cx="16" cy="19" rx="6" ry="4" fill="#FFFFFF" opacity=".45"/>
-        <ellipse cx="18" cy="21" rx="2.2" ry="1.4" fill="#FFFFFF" opacity=".9"/>
-      </svg>
+      <div class="ornament-swing">
+        <div class="bauble-impulse">
+        <span class="ornament-thread"></span>
+        <svg class="ornament-ball" viewBox="0 0 48 48">
+          <defs><radialGradient id="orbC" cx="34%" cy="26%" r="78%">
+            <stop offset="0%" stop-color="#FCA5A5"/><stop offset="50%" stop-color="#EF4444"/><stop offset="100%" stop-color="#991B1B"/>
+          </radialGradient></defs>
+          <rect x="20" y="1" width="8" height="4" rx="1.5" fill="#FDE68A"/>
+          <circle cx="24" cy="28" r="19" fill="url(#orbC)"/>
+          <ellipse cx="16" cy="19" rx="6" ry="4" fill="#FFFFFF" opacity=".45"/>
+          <ellipse cx="18" cy="21" rx="2.2" ry="1.4" fill="#FFFFFF" opacity=".9"/>
+        </svg>
+        </div>
+      </div>
     </div>
 
     <div class="ornament ornament--far ornament-4">
-      <span class="ornament-thread"></span>
-      <svg class="ornament-ball" viewBox="0 0 48 48">
-        <defs><radialGradient id="orbD" cx="34%" cy="26%" r="78%">
-          <stop offset="0%" stop-color="#EF4444"/><stop offset="50%" stop-color="#7F1D1D"/><stop offset="100%" stop-color="#450A0A"/>
-        </radialGradient></defs>
-        <rect x="20" y="1" width="8" height="4" rx="1.5" fill="#FDE68A"/>
-        <circle cx="24" cy="28" r="19" fill="url(#orbD)"/>
-        <ellipse cx="16" cy="19" rx="6" ry="4" fill="#FFFFFF" opacity=".22"/>
-      </svg>
+      <div class="ornament-swing">
+        <div class="bauble-impulse">
+        <span class="ornament-thread"></span>
+        <svg class="ornament-ball" viewBox="0 0 48 48">
+          <defs><radialGradient id="orbD" cx="34%" cy="26%" r="78%">
+            <stop offset="0%" stop-color="#FEF08A"/><stop offset="50%" stop-color="#F59E0B"/><stop offset="100%" stop-color="#B45309"/>
+          </radialGradient></defs>
+          <rect x="20" y="1" width="8" height="4" rx="1.5" fill="#FDE68A"/>
+          <circle cx="24" cy="28" r="19" fill="url(#orbD)"/>
+          <ellipse cx="16" cy="19" rx="6" ry="4" fill="#FFFFFF" opacity=".22"/>
+        </svg>
+        </div>
+      </div>
       <svg class="ornament-sparkle sparkle-d" viewBox="0 0 24 24"><path d="M12 0 13.6 10.4 24 12 13.6 13.6 12 24 10.4 13.6 0 12 10.4 10.4Z"/></svg>
     </div>
 
     <div class="ornament ornament--far ornament-5">
-      <span class="ornament-thread"></span>
-      <svg class="ornament-ball" viewBox="0 0 48 48">
-        <defs><radialGradient id="orbE" cx="34%" cy="26%" r="78%">
-          <stop offset="0%" stop-color="#F87171"/><stop offset="50%" stop-color="#DC2626"/><stop offset="100%" stop-color="#991B1B"/>
-        </radialGradient></defs>
-        <rect x="20" y="1" width="8" height="4" rx="1.5" fill="#FDE68A"/>
-        <circle cx="24" cy="28" r="19" fill="url(#orbE)"/>
-        <ellipse cx="16" cy="19" rx="6" ry="4" fill="#FFFFFF" opacity=".40"/>
-      </svg>
+      <div class="ornament-swing">
+        <div class="bauble-impulse">
+        <span class="ornament-thread"></span>
+        <svg class="ornament-ball" viewBox="0 0 48 48">
+          <defs><radialGradient id="orbE" cx="34%" cy="26%" r="78%">
+            <stop offset="0%" stop-color="#FCA5A5"/><stop offset="50%" stop-color="#EF4444"/><stop offset="100%" stop-color="#991B1B"/>
+          </radialGradient></defs>
+          <rect x="20" y="1" width="8" height="4" rx="1.5" fill="#FDE68A"/>
+          <circle cx="24" cy="28" r="19" fill="url(#orbE)"/>
+          <ellipse cx="16" cy="19" rx="6" ry="4" fill="#FFFFFF" opacity=".40"/>
+        </svg>
+        </div>
+      </div>
     </div>
 
     <div class="ornament ornament--far ornament-6">
-      <span class="ornament-thread"></span>
-      <svg class="ornament-ball" viewBox="0 0 48 48">
-        <defs><radialGradient id="orbF" cx="34%" cy="26%" r="78%">
-          <stop offset="0%" stop-color="#059669"/><stop offset="45%" stop-color="#064E3B"/><stop offset="100%" stop-color="#022C22"/>
-        </radialGradient></defs>
-        <rect x="20" y="1" width="8" height="4" rx="1.5" fill="#FDE68A"/>
-        <circle cx="24" cy="28" r="19" fill="url(#orbF)"/>
-        <ellipse cx="16" cy="19" rx="6" ry="4" fill="#FFFFFF" opacity=".30"/>
-      </svg>
+      <div class="ornament-swing">
+        <div class="bauble-impulse">
+        <span class="ornament-thread"></span>
+        <svg class="ornament-ball" viewBox="0 0 48 48">
+          <defs><radialGradient id="orbF" cx="34%" cy="26%" r="78%">
+            <stop offset="0%" stop-color="#6EE7B7"/><stop offset="45%" stop-color="#10B981"/><stop offset="100%" stop-color="#065F46"/>
+          </radialGradient></defs>
+          <rect x="20" y="1" width="8" height="4" rx="1.5" fill="#FDE68A"/>
+          <circle cx="24" cy="28" r="19" fill="url(#orbF)"/>
+          <ellipse cx="16" cy="19" rx="6" ry="4" fill="#FFFFFF" opacity=".30"/>
+        </svg>
+        </div>
+      </div>
     </div>
 
   </div>
@@ -582,10 +709,10 @@
 
     <!-- Header -->
     <header>
-      <p id="greeting" class="text-sm font-medium tracking-tight text-zinc-600">¡Buen día!</p>
+      <p id="greeting" class="text-sm font-medium tracking-tight text-white/85">¡Buen día!</p>
       <time id="caracas-now" datetime="" class="mt-1 block">
-        <span id="caracas-date-text" class="block text-[1.6rem] font-bold leading-tight tracking-[-0.02em] text-zinc-900 sm:text-3xl">Cargando fecha…</span>
-        <span id="caracas-meta" class="mt-1 block text-xs font-medium tabular-nums tracking-tight text-zinc-500">—</span>
+        <span id="caracas-date-text" class="block text-[1.6rem] font-bold leading-tight tracking-[-0.02em] text-white sm:text-3xl">Cargando fecha…</span>
+        <span id="caracas-meta" class="mt-1 block text-xs font-medium tabular-nums tracking-tight text-white/60">—</span>
       </time>
     </header>
 
@@ -607,7 +734,7 @@
         <div class="mt-1 flex items-center justify-between gap-3">
           <input id="amount" type="text" inputmode="decimal" value="1,00"
             placeholder="0,00" aria-label="Monto a convertir"
-            class="w-full min-w-0 bg-transparent text-right font-num text-5xl font-bold tabular-nums tracking-tight text-zinc-900 outline-none transition-all duration-300 ease-in-out placeholder:text-zinc-900/25 caret-transparent sm:text-6xl" />
+            class="w-full min-w-0 bg-transparent text-right font-num text-5xl font-bold tabular-nums tracking-tight text-white outline-none transition-all duration-300 ease-in-out placeholder:text-white/25 caret-transparent sm:text-6xl" />
           <div class="flex shrink-0 items-center gap-2">
             <button id="clear-btn" type="button" class="clear-btn ios-icon-btn ios-glass-btn ios-liquid-glass" aria-label="Limpiar monto">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -645,7 +772,7 @@
         </div>
 
         <div class="mt-1 flex items-center justify-between gap-3">
-          <p id="result" class="w-full min-w-0 whitespace-nowrap text-right font-num text-4xl font-bold tabular-nums tracking-tight text-zinc-900 sm:text-5xl"><span class="result-ph">0,00</span></p>
+          <p id="result" class="w-full min-w-0 whitespace-nowrap text-right font-num text-4xl font-bold tabular-nums tracking-tight text-white sm:text-5xl"><span class="result-ph">0,00</span></p>
           <div class="flex shrink-0 items-center gap-2">
             <button type="button" class="clear-btn ios-icon-btn ios-glass-btn ios-liquid-glass" aria-label="Limpiar cálculo">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -839,8 +966,8 @@
       grid.innerHTML = RATE_COLUMNS.map((c, i) => `
         <div class="rate-col" role="radio" aria-checked="${i === 0}" tabindex="${i === 0 ? 0 : -1}"
           data-rate-card="${c.id}" aria-label="Tasa ${c.label}">
-          <span class="rate-sigla whitespace-nowrap text-xs font-medium uppercase tracking-wider text-zinc-500">${c.sigla}</span>
-          <span class="rate-name whitespace-nowrap flex items-center gap-1 text-sm text-zinc-700">${c.label}</span>
+          <span class="rate-sigla whitespace-nowrap text-xs font-medium uppercase tracking-wider text-white/60">${c.sigla}</span>
+          <span class="rate-name whitespace-nowrap flex items-center gap-1 text-sm text-white/60">${c.label}</span>
           <p id="${c.priceId}" class="rate-price whitespace-nowrap transition-all duration-300 ease-in-out">${moneyHtml('Bs.', Number.isFinite(RATES[c.id].value) ? fmt(RATES[c.id].value) : '—', 'rate-cur', '')}</p>
         </div>`).join('');
     }
@@ -1202,6 +1329,51 @@
     updateClearButtonVisibility();
 
     const rateCards = Array.from(document.querySelectorAll('[data-rate-card]'));
+
+    // Bauble interaction
+    (() => {
+      const orbs = Array.from(document.querySelectorAll('.ornament'));
+      if (!orbs.length) return;
+      const HIT_PAD = 10;
+
+      const orbAt = (x, y) => orbs.find((orb) => {
+        const ball = orb.querySelector('.ornament-ball');
+        if (!ball) return false;
+        const r = ball.getBoundingClientRect();
+        return x >= r.left - HIT_PAD && x <= r.right + HIT_PAD
+          && y >= r.top - HIT_PAD && y <= r.bottom + HIT_PAD;
+      });
+
+      const bounce = (orb) => {
+        const impulse = orb.querySelector('.bauble-impulse');
+        if (!impulse) return;
+        impulse.classList.remove('is-bouncing');
+        void impulse.offsetWidth;
+        impulse.classList.add('is-bouncing');
+      };
+
+      window.addEventListener('pointerdown', (e) => {
+        const orb = orbAt(e.clientX, e.clientY);
+        if (orb) bounce(orb);
+      }, { passive: true });
+
+      let hovered = null;
+      window.addEventListener('pointermove', (e) => {
+        if (e.pointerType !== 'mouse') return;
+        const orb = orbAt(e.clientX, e.clientY);
+        if (orb === hovered) return;
+        hovered = orb;
+        document.body.style.cursor = orb ? 'pointer' : '';
+      }, { passive: true });
+
+      orbs.forEach((orb) => {
+        const impulse = orb.querySelector('.bauble-impulse');
+        if (!impulse) return;
+        impulse.addEventListener('animationend', (e) => {
+          if (e.animationName === 'smooth-nudge') impulse.classList.remove('is-bouncing');
+        });
+      });
+    })();
 
     // Rate selection
     function selectRate(rateKey, { focusCard = false } = {}) {
