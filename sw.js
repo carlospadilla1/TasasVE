@@ -9,7 +9,7 @@
  *  - Limpieza de caches antiguos al activar.
  * ============================================================ */
 
-const VERSION = 'v4.1.0'; // Lighter frost
+const VERSION = 'v4.3.0'; // Decimal key
 const SHELL_CACHE = `tasasve-shell-${VERSION}`;
 const DATA_CACHE = `tasasve-data-${VERSION}`;
 const ASSET_CACHE = `tasasve-assets-${VERSION}`;

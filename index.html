@@ -71,8 +71,12 @@
       z-index: 50;
       opacity: 0.06;
 
-      background-size: 200px 200px;
+      background-size: 180px 180px;
       background-repeat: repeat;
+      transform: translateZ(0);
+      -webkit-backface-visibility: hidden;
+      backface-visibility: hidden;
+      contain: strict;
       background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
     }
 
@@ -81,6 +85,7 @@
 
     body #stage {
       gap: 0;
+      overscroll-behavior: contain;
       padding-top: var(--air-top);
       padding-bottom: 0;
     }
@@ -111,7 +116,14 @@
     }
 
     /* Layout */
-    html, body { height: 100dvh; }
+    html, body {
+      height: 100vh;
+      height: 100dvh;
+      overscroll-behavior: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    button, a, input, .ornament-ball { -webkit-tap-highlight-color: transparent; }
     body {
       --air-top: calc(2rem + min(1.5rem, max(0px, (100dvh - 821px) * 0.75)));
       --air-dock: 1rem;
@@ -133,10 +145,14 @@
     /* Glass */
     .ios-liquid-glass {
       background: linear-gradient(145deg, rgba(255, 255, 255, .16) 0%, rgba(255, 255, 255, .08) 100%);
-      backdrop-filter: blur(24px) saturate(150%);
-      -webkit-backdrop-filter: blur(24px) saturate(150%);
+      -webkit-backdrop-filter: blur(16px) saturate(150%);
+      backdrop-filter: blur(16px) saturate(150%);
       border: 1px solid rgba(255, 255, 255, .22);
       box-shadow: 0 10px 28px rgba(0, 0, 0, .22), inset 0 1px 1px rgba(255, 255, 255, .28);
+      transform: translate3d(0, 0, 0);
+      -webkit-backface-visibility: hidden;
+      backface-visibility: hidden;
+      contain: layout paint;
     }
 
     .ios-glass-btn {
@@ -193,9 +209,6 @@
 
     .amount-card {
       cursor: pointer;
-      background: linear-gradient(145deg, rgba(255, 255, 255, .16) 0%, rgba(255, 255, 255, .08) 100%);
-      border-color: rgba(255, 255, 255, .22);
-      box-shadow: 0 10px 28px rgba(0, 0, 0, .22), inset 0 1px 1px rgba(255, 255, 255, .28);
       transition: border-color .2s ease, box-shadow .2s ease;
     }
     .amount-card input { cursor: text; }
@@ -349,9 +362,19 @@
       overflow: hidden;
       pointer-events: none;
       z-index: 10;
+      transform: translateZ(0);
+      -webkit-backface-visibility: hidden;
+      backface-visibility: hidden;
+      contain: layout style paint;
     }
 
-    .ornament { position: absolute; top: 0; }
+    .ornament {
+      position: absolute;
+      top: 0;
+      transform: translateZ(0);
+      -webkit-backface-visibility: hidden;
+      backface-visibility: hidden;
+    }
 
     .ornament-swing {
       transform-origin: 50% 0%;
@@ -371,7 +394,7 @@
       background: linear-gradient(180deg, rgba(255, 255, 255, .28) 0%, rgba(255, 255, 255, .05) 100%);
     }
 
-    .ornament-ball { display: block; }
+    .ornament-ball { display: block; pointer-events: auto; cursor: pointer; }
 
     .bauble-impulse {
       transform-box: view-box;
@@ -460,13 +483,13 @@
     .sparkle-d { right: -14px; top: 40px; width: 8px; height: 8px; animation-delay: -.6s; }
 
     @keyframes ornamentSwing {
-      from { transform: translate3d(0, 0, 0) rotate(-3.5deg); }
-      to   { transform: translate3d(0, 0, 0) rotate(3.5deg); }
+      from { transform: rotate3d(0, 0, 1, -3.5deg); }
+      to   { transform: rotate3d(0, 0, 1, 3.5deg); }
     }
 
     @keyframes ornamentSwingFar {
-      from { transform: translate3d(0, 0, 0) rotate(-1.8deg); }
-      to   { transform: translate3d(0, 0, 0) rotate(1.8deg); }
+      from { transform: rotate3d(0, 0, 1, -1.8deg); }
+      to   { transform: rotate3d(0, 0, 1, 1.8deg); }
     }
 
     @keyframes twinkle {
@@ -481,13 +504,17 @@
       overflow: hidden;
       pointer-events: none;
       z-index: 10;
+      transform: translateZ(0);
+      -webkit-backface-visibility: hidden;
+      backface-visibility: hidden;
+      contain: layout style paint;
     }
 
     .snow-flake {
       position: absolute;
       top: -6vh;
       border-radius: 9999px;
-      background: radial-gradient(circle at 35% 30%, rgba(255, 255, 255, .95) 0%, rgba(255, 255, 255, .55) 58%, rgba(16, 185, 129, .35) 100%);
+      background: radial-gradient(circle, rgba(255, 255, 255, .85) 0%, rgba(16, 185, 129, .2) 50%, transparent 100%);
       box-shadow: 0 0 0 .5px rgba(16, 185, 129, .20), 0 0 4px rgba(16, 185, 129, .16);
       animation-name: snowFall;
       animation-timing-function: linear;
@@ -668,40 +695,40 @@
 
   <!-- Snow -->
   <div class="snow" aria-hidden="true">
-    <span class="snow-flake" style="left: 2%; width: 2px; height: 2px; filter: blur(1px); animation-duration: 13s; animation-delay: -1s; --drift: 8px;"></span>
-    <span class="snow-flake" style="left: 5%; width: 4px; height: 4px; filter: blur(1.5px); animation-duration: 14s; animation-delay: -4s; --drift: -9px;"></span>
-    <span class="snow-flake" style="left: 9%; width: 3px; height: 3px; filter: blur(2px); animation-duration: 15s; animation-delay: -7s; --drift: 10px;"></span>
-    <span class="snow-flake" style="left: 10%; width: 5px; height: 5px; filter: blur(2.5px); animation-duration: 16s; animation-delay: -10s; --drift: -11px;"></span>
-    <span class="snow-flake" style="left: 14%; width: 6px; height: 6px; filter: blur(3px); animation-duration: 17s; animation-delay: -13s; --drift: 12px;"></span>
-    <span class="snow-flake" style="left: 18%; width: 2px; height: 2px; filter: blur(1px); animation-duration: 18s; animation-delay: -16s; --drift: -13px;"></span>
-    <span class="snow-flake" style="left: 19%; width: 4px; height: 4px; filter: blur(1.5px); animation-duration: 19s; animation-delay: -19s; --drift: 14px;"></span>
-    <span class="snow-flake" style="left: 23%; width: 3px; height: 3px; filter: blur(2px); animation-duration: 20s; animation-delay: -22s; --drift: -15px;"></span>
-    <span class="snow-flake" style="left: 27%; width: 5px; height: 5px; filter: blur(2.5px); animation-duration: 21s; animation-delay: -25s; --drift: 16px;"></span>
-    <span class="snow-flake" style="left: 28%; width: 6px; height: 6px; filter: blur(3px); animation-duration: 22s; animation-delay: -3s; --drift: -17px;"></span>
-    <span class="snow-flake" style="left: 32%; width: 2px; height: 2px; filter: blur(1px); animation-duration: 23s; animation-delay: -6s; --drift: 18px;"></span>
-    <span class="snow-flake" style="left: 36%; width: 4px; height: 4px; filter: blur(1.5px); animation-duration: 24s; animation-delay: -9s; --drift: -19px;"></span>
-    <span class="snow-flake" style="left: 36%; width: 3px; height: 3px; filter: blur(2px); animation-duration: 25s; animation-delay: -12s; --drift: 20px;"></span>
-    <span class="snow-flake" style="left: 40%; width: 5px; height: 5px; filter: blur(2.5px); animation-duration: 13s; animation-delay: -15s; --drift: -21px;"></span>
-    <span class="snow-flake" style="left: 44%; width: 6px; height: 6px; filter: blur(3px); animation-duration: 14s; animation-delay: -18s; --drift: 22px;"></span>
-    <span class="snow-flake" style="left: 45%; width: 2px; height: 2px; filter: blur(1px); animation-duration: 15s; animation-delay: -21s; --drift: -8px;"></span>
-    <span class="snow-flake" style="left: 49%; width: 4px; height: 4px; filter: blur(1.5px); animation-duration: 16s; animation-delay: -24s; --drift: 9px;"></span>
-    <span class="snow-flake" style="left: 53%; width: 3px; height: 3px; filter: blur(2px); animation-duration: 17s; animation-delay: -2s; --drift: -10px;"></span>
-    <span class="snow-flake" style="left: 54%; width: 5px; height: 5px; filter: blur(2.5px); animation-duration: 18s; animation-delay: -5s; --drift: 11px;"></span>
-    <span class="snow-flake" style="left: 58%; width: 6px; height: 6px; filter: blur(3px); animation-duration: 19s; animation-delay: -8s; --drift: -12px;"></span>
-    <span class="snow-flake" style="left: 62%; width: 2px; height: 2px; filter: blur(1px); animation-duration: 20s; animation-delay: -11s; --drift: 13px;"></span>
-    <span class="snow-flake" style="left: 63%; width: 4px; height: 4px; filter: blur(1.5px); animation-duration: 21s; animation-delay: -14s; --drift: -14px;"></span>
-    <span class="snow-flake" style="left: 67%; width: 3px; height: 3px; filter: blur(2px); animation-duration: 22s; animation-delay: -17s; --drift: 15px;"></span>
-    <span class="snow-flake" style="left: 70%; width: 5px; height: 5px; filter: blur(2.5px); animation-duration: 23s; animation-delay: -20s; --drift: -16px;"></span>
-    <span class="snow-flake" style="left: 71%; width: 6px; height: 6px; filter: blur(3px); animation-duration: 24s; animation-delay: -23s; --drift: 17px;"></span>
-    <span class="snow-flake" style="left: 75%; width: 2px; height: 2px; filter: blur(1px); animation-duration: 25s; animation-delay: -1s; --drift: -18px;"></span>
-    <span class="snow-flake" style="left: 79%; width: 4px; height: 4px; filter: blur(1.5px); animation-duration: 13s; animation-delay: -4s; --drift: 19px;"></span>
-    <span class="snow-flake" style="left: 80%; width: 3px; height: 3px; filter: blur(2px); animation-duration: 14s; animation-delay: -7s; --drift: -20px;"></span>
-    <span class="snow-flake" style="left: 84%; width: 5px; height: 5px; filter: blur(2.5px); animation-duration: 15s; animation-delay: -10s; --drift: 21px;"></span>
-    <span class="snow-flake" style="left: 88%; width: 6px; height: 6px; filter: blur(3px); animation-duration: 16s; animation-delay: -13s; --drift: -22px;"></span>
-    <span class="snow-flake" style="left: 89%; width: 2px; height: 2px; filter: blur(1px); animation-duration: 17s; animation-delay: -16s; --drift: 8px;"></span>
-    <span class="snow-flake" style="left: 93%; width: 4px; height: 4px; filter: blur(1.5px); animation-duration: 18s; animation-delay: -19s; --drift: -9px;"></span>
-    <span class="snow-flake" style="left: 97%; width: 3px; height: 3px; filter: blur(2px); animation-duration: 19s; animation-delay: -22s; --drift: 10px;"></span>
-    <span class="snow-flake" style="left: 98%; width: 5px; height: 5px; filter: blur(2.5px); animation-duration: 20s; animation-delay: -25s; --drift: -11px;"></span>
+    <span class="snow-flake" style="left: 2%; width: 2px; height: 2px; animation-duration: 13s; animation-delay: -1s; --drift: 8px;"></span>
+    <span class="snow-flake" style="left: 5%; width: 4px; height: 4px; animation-duration: 14s; animation-delay: -4s; --drift: -9px;"></span>
+    <span class="snow-flake" style="left: 9%; width: 3px; height: 3px; animation-duration: 15s; animation-delay: -7s; --drift: 10px;"></span>
+    <span class="snow-flake" style="left: 10%; width: 5px; height: 5px; animation-duration: 16s; animation-delay: -10s; --drift: -11px;"></span>
+    <span class="snow-flake" style="left: 14%; width: 6px; height: 6px; animation-duration: 17s; animation-delay: -13s; --drift: 12px;"></span>
+    <span class="snow-flake" style="left: 18%; width: 2px; height: 2px; animation-duration: 18s; animation-delay: -16s; --drift: -13px;"></span>
+    <span class="snow-flake" style="left: 19%; width: 4px; height: 4px; animation-duration: 19s; animation-delay: -19s; --drift: 14px;"></span>
+    <span class="snow-flake" style="left: 23%; width: 3px; height: 3px; animation-duration: 20s; animation-delay: -22s; --drift: -15px;"></span>
+    <span class="snow-flake" style="left: 27%; width: 5px; height: 5px; animation-duration: 21s; animation-delay: -25s; --drift: 16px;"></span>
+    <span class="snow-flake" style="left: 28%; width: 6px; height: 6px; animation-duration: 22s; animation-delay: -3s; --drift: -17px;"></span>
+    <span class="snow-flake" style="left: 32%; width: 2px; height: 2px; animation-duration: 23s; animation-delay: -6s; --drift: 18px;"></span>
+    <span class="snow-flake" style="left: 36%; width: 4px; height: 4px; animation-duration: 24s; animation-delay: -9s; --drift: -19px;"></span>
+    <span class="snow-flake" style="left: 36%; width: 3px; height: 3px; animation-duration: 25s; animation-delay: -12s; --drift: 20px;"></span>
+    <span class="snow-flake" style="left: 40%; width: 5px; height: 5px; animation-duration: 13s; animation-delay: -15s; --drift: -21px;"></span>
+    <span class="snow-flake" style="left: 44%; width: 6px; height: 6px; animation-duration: 14s; animation-delay: -18s; --drift: 22px;"></span>
+    <span class="snow-flake" style="left: 45%; width: 2px; height: 2px; animation-duration: 15s; animation-delay: -21s; --drift: -8px;"></span>
+    <span class="snow-flake" style="left: 49%; width: 4px; height: 4px; animation-duration: 16s; animation-delay: -24s; --drift: 9px;"></span>
+    <span class="snow-flake" style="left: 53%; width: 3px; height: 3px; animation-duration: 17s; animation-delay: -2s; --drift: -10px;"></span>
+    <span class="snow-flake" style="left: 54%; width: 5px; height: 5px; animation-duration: 18s; animation-delay: -5s; --drift: 11px;"></span>
+    <span class="snow-flake" style="left: 58%; width: 6px; height: 6px; animation-duration: 19s; animation-delay: -8s; --drift: -12px;"></span>
+    <span class="snow-flake" style="left: 62%; width: 2px; height: 2px; animation-duration: 20s; animation-delay: -11s; --drift: 13px;"></span>
+    <span class="snow-flake" style="left: 63%; width: 4px; height: 4px; animation-duration: 21s; animation-delay: -14s; --drift: -14px;"></span>
+    <span class="snow-flake" style="left: 67%; width: 3px; height: 3px; animation-duration: 22s; animation-delay: -17s; --drift: 15px;"></span>
+    <span class="snow-flake" style="left: 70%; width: 5px; height: 5px; animation-duration: 23s; animation-delay: -20s; --drift: -16px;"></span>
+    <span class="snow-flake" style="left: 71%; width: 6px; height: 6px; animation-duration: 24s; animation-delay: -23s; --drift: 17px;"></span>
+    <span class="snow-flake" style="left: 75%; width: 2px; height: 2px; animation-duration: 25s; animation-delay: -1s; --drift: -18px;"></span>
+    <span class="snow-flake" style="left: 79%; width: 4px; height: 4px; animation-duration: 13s; animation-delay: -4s; --drift: 19px;"></span>
+    <span class="snow-flake" style="left: 80%; width: 3px; height: 3px; animation-duration: 14s; animation-delay: -7s; --drift: -20px;"></span>
+    <span class="snow-flake" style="left: 84%; width: 5px; height: 5px; animation-duration: 15s; animation-delay: -10s; --drift: 21px;"></span>
+    <span class="snow-flake" style="left: 88%; width: 6px; height: 6px; animation-duration: 16s; animation-delay: -13s; --drift: -22px;"></span>
+    <span class="snow-flake" style="left: 89%; width: 2px; height: 2px; animation-duration: 17s; animation-delay: -16s; --drift: 8px;"></span>
+    <span class="snow-flake" style="left: 93%; width: 4px; height: 4px; animation-duration: 18s; animation-delay: -19s; --drift: -9px;"></span>
+    <span class="snow-flake" style="left: 97%; width: 3px; height: 3px; animation-duration: 19s; animation-delay: -22s; --drift: 10px;"></span>
+    <span class="snow-flake" style="left: 98%; width: 5px; height: 5px; animation-duration: 20s; animation-delay: -25s; --drift: -11px;"></span>
   </div>
 
   <main class="relative z-[100] flex min-h-0 w-full flex-1 flex-col">
@@ -881,6 +908,12 @@
   (() => {
     'use strict';
 
+    const NUM_FMT = new Intl.NumberFormat('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const DT_FMT = new Intl.DateTimeFormat('es-VE', {
+      weekday: 'long', day: 'numeric', month: 'numeric', year: 'numeric',
+      hour: '2-digit', minute: '2-digit', hour12: true,
+    });
+
     const PROXY_SOURCES = [
       { label: 'proxy-netlify', url: '/.netlify/functions/rates' },
       { label: 'proxy-local', url: './api/rates' },
@@ -1012,14 +1045,19 @@
 
     function setCurrencyPill(el, code) {
       const meta = CURRENCY_META[code];
-      if (!el || !meta) return;
+      if (!el || !meta || el.dataset.currency === code) return;
+      el.dataset.currency = code;
       el.innerHTML = meta.flag + `<span class="currency-code">${code}</span>`;
       el.setAttribute('aria-label', `${meta.name} (${code})`);
     }
 
+    let lastFit = '';
     function fitResultText() {
       const el = els.result;
       if (!el) return;
+      const sig = `${el.textContent.length}:${el.clientWidth}`;
+      if (sig === lastFit) return;
+      lastFit = sig;
       el.style.fontSize = '';
       const base = parseFloat(getComputedStyle(el).fontSize);
       if (!Number.isFinite(base)) return;
@@ -1046,10 +1084,7 @@
 
     function localParts(d) {
       const p = {};
-      for (const part of new Intl.DateTimeFormat('es-VE', {
-        weekday: 'long', day: 'numeric', month: 'numeric', year: 'numeric',
-        hour: '2-digit', minute: '2-digit', hour12: true,
-      }).formatToParts(d)) {
+      for (const part of DT_FMT.formatToParts(d)) {
         if (part.type !== 'literal') p[part.type] = part.value;
       }
       const hour12 = Number(p.hour);
@@ -1169,30 +1204,26 @@
 
     function formatLocalNumber(num) {
       if (!Number.isFinite(num)) return '';
-      return num.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    }
-
-    function unifyDecimalSeparator(raw) {
-      const s = String(raw ?? '');
-      const lastComma = s.lastIndexOf(',');
-      const lastDot = s.lastIndexOf('.');
-      if (lastComma !== -1 && lastDot !== -1) {
-        return lastComma > lastDot ? s.replace(/\./g, '') : s.replace(/,/g, '');
-      }
-      if (lastDot === -1) return s;
-      return /^\d{1,3}(\.\d{3})+$/.test(s) ? s.replace(/\./g, '') : s.replace(/\./g, ',');
+      return NUM_FMT.format(num);
     }
 
     function maskLocalNumber(raw) {
-      const s = unifyDecimalSeparator(raw).replace(/[^\d,]/g, '');
-      const comma = s.indexOf(',');
-      const group = (digits) => digits.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+      const parts = String(raw ?? '').replace(/\./g, '').replace(/[^\d,]/g, '').split(',');
+      const int = parts[0].replace(/^0+(?=\d)/, '');
+      const grouped = int.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+      if (parts.length === 1) return grouped;
+      return `${grouped || '0'},${parts[1].slice(0, 2)}`;
+    }
 
-      if (comma === -1) return group(s.replace(/^0+(?=\d)/, ''));
-
-      const int = s.slice(0, comma).replace(/,/g, '').replace(/^0+(?=\d)/, '');
-      const dec = s.slice(comma + 1).replace(/,/g, '').slice(0, 2);
-      return `${group(int === '' ? '0' : int)},${dec}`;
+    function insertDecimal() {
+      const input = els.amount;
+      if (input.value.includes(',')) return;
+      const base = maskLocalNumber(input.value) || '0';
+      input.value = `${base},`;
+      const end = input.value.length;
+      if (typeof input.setSelectionRange === 'function') input.setSelectionRange(end, end);
+      compute();
+      updateClearButtonVisibility();
     }
 
     function normalizeAmountField() {
@@ -1231,13 +1262,13 @@
       button.addEventListener('click', () => copyValueFromButton(button));
     });
 
+    const clearBtns = Array.from(document.querySelectorAll('.clear-btn'));
+
     function updateClearButtonVisibility() {
       const raw = String(els.amount.value).trim();
       const value = parseLocalNumber(raw);
       const shouldShow = raw !== '' && !(Number.isFinite(value) && value === 0);
-      document.querySelectorAll('.clear-btn').forEach((btn) => {
-        btn.style.display = shouldShow ? 'inline-flex' : 'none';
-      });
+      for (const btn of clearBtns) btn.style.display = shouldShow ? 'inline-flex' : 'none';
     }
 
     function clearAmount() {
@@ -1247,7 +1278,7 @@
       updateClearButtonVisibility();
     }
 
-    document.querySelectorAll('.clear-btn').forEach((btn) => btn.addEventListener('click', clearAmount));
+    for (const btn of clearBtns) btn.addEventListener('click', clearAmount);
 
     // Direction swap
     function setDirection(dir) {
@@ -1302,7 +1333,7 @@
       updateClearButtonVisibility();
     });
 
-    els.amount.addEventListener('click', forceCursorToEnd);
+    els.amount.addEventListener('click', forceCursorToEnd, { passive: true });
 
     const amountCard = document.getElementById('amount-card');
     amountCard?.addEventListener('click', (event) => {
@@ -1314,9 +1345,20 @@
       updateClearButtonVisibility();
     });
 
+    els.amount.addEventListener('keydown', (event) => {
+      if (event.key !== '.' && event.key !== ',') return;
+      event.preventDefault();
+      insertDecimal();
+    });
+
     els.amount.addEventListener('beforeinput', (event) => {
       if (event.inputType !== 'insertText' || event.data == null) return;
-      if (!/^[\d.,]+$/.test(event.data)) event.preventDefault();
+      if (event.data === '.' || event.data === ',') {
+        event.preventDefault();
+        insertDecimal();
+        return;
+      }
+      if (!/^\d+$/.test(event.data)) event.preventDefault();
     });
 
     els.amount.addEventListener('input', () => {
@@ -1332,47 +1374,53 @@
 
     // Bauble interaction
     (() => {
-      const orbs = Array.from(document.querySelectorAll('.ornament'));
-      if (!orbs.length) return;
-      const HIT_PAD = 10;
+      const layer = document.querySelector('.christmas-bg');
+      const balls = Array.from(document.querySelectorAll('.ornament-ball'));
+      if (!layer || !balls.length) return;
 
-      const orbAt = (x, y) => orbs.find((orb) => {
-        const ball = orb.querySelector('.ornament-ball');
-        if (!ball) return false;
-        const r = ball.getBoundingClientRect();
-        return x >= r.left - HIT_PAD && x <= r.right + HIT_PAD
-          && y >= r.top - HIT_PAD && y <= r.bottom + HIT_PAD;
-      });
+      const HIT_PAD = 10;
+      let boxes = [];
+
+      const measure = () => {
+        boxes = balls.map((ball) => {
+          const r = ball.getBoundingClientRect();
+          return {
+            orb: ball.closest('.ornament'),
+            left: r.left - HIT_PAD, top: r.top - HIT_PAD,
+            right: r.right + HIT_PAD, bottom: r.bottom + HIT_PAD,
+          };
+        });
+      };
 
       const bounce = (orb) => {
-        const impulse = orb.querySelector('.bauble-impulse');
+        const impulse = orb && orb.querySelector('.bauble-impulse');
         if (!impulse) return;
         impulse.classList.remove('is-bouncing');
         void impulse.offsetWidth;
         impulse.classList.add('is-bouncing');
       };
 
+      const orbAt = (x, y) => {
+        for (const b of boxes) {
+          if (x >= b.left && x <= b.right && y >= b.top && y <= b.bottom) return b.orb;
+        }
+        return null;
+      };
+
       window.addEventListener('pointerdown', (e) => {
-        const orb = orbAt(e.clientX, e.clientY);
-        if (orb) bounce(orb);
+        const direct = e.target.closest && e.target.closest('.ornament');
+        bounce(direct || orbAt(e.clientX, e.clientY));
       }, { passive: true });
 
-      let hovered = null;
-      window.addEventListener('pointermove', (e) => {
-        if (e.pointerType !== 'mouse') return;
-        const orb = orbAt(e.clientX, e.clientY);
-        if (orb === hovered) return;
-        hovered = orb;
-        document.body.style.cursor = orb ? 'pointer' : '';
-      }, { passive: true });
+      window.addEventListener('resize', measure, { passive: true });
+      window.addEventListener('orientationchange', measure, { passive: true });
+      if (document.fonts && document.fonts.ready) document.fonts.ready.then(measure);
 
-      orbs.forEach((orb) => {
-        const impulse = orb.querySelector('.bauble-impulse');
-        if (!impulse) return;
-        impulse.addEventListener('animationend', (e) => {
-          if (e.animationName === 'smooth-nudge') impulse.classList.remove('is-bouncing');
-        });
+      layer.addEventListener('animationend', (e) => {
+        if (e.animationName === 'smooth-nudge') e.target.classList.remove('is-bouncing');
       });
+
+      measure();
     })();
 
     // Rate selection
