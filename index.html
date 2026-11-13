@@ -49,11 +49,11 @@
     input[type='number']::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
     input[type='number'] { -moz-appearance: textfield; appearance: textfield; }
 
-    /* Foco accesible coherente con el acento rojo */
-    :focus-visible { outline: 2px solid #DC2626; outline-offset: 2px; }
-    /* Selección de texto en toda la app: rojo suave sobre granate profundo */
-    ::selection { background: #FEE2E2; color: #7F1D1D; }
-    /* Badge de estado/tasa bajo la calculadora: píldora roja sólida con texto
+    /* Foco accesible coherente con el acento esmeralda */
+    :focus-visible { outline: 2px solid #10B981; outline-offset: 2px; }
+    /* Selección de texto en toda la app: menta suave sobre esmeralda profundo */
+    ::selection { background: #D1FAE5; color: #064E3B; }
+    /* Badge de estado/tasa bajo la calculadora: píldora esmeralda con texto
        blanco y cifras tabulares de Space Grotesk. Es el único bloque de color
        pleno de la pantalla, así que ancla la jerarquía del cálculo. */
     .result-badge {
@@ -61,9 +61,9 @@
       margin: 16px auto 0;
       padding: 5px 14px;
       border-radius: 9999px;
-      background-color: #DC2626;
+      background-color: #10B981;
       color: #FFFFFF;
-      box-shadow: 0 8px 18px -10px rgba(220, 38, 38, .70);
+      box-shadow: 0 8px 18px -10px rgba(16, 185, 129, .55);
       font-size: 12px; font-weight: 600;
       letter-spacing: .02em;
       font-variant-numeric: tabular-nums;
@@ -72,9 +72,9 @@
     /* ===== FONDO: un único degradado a pantalla completa =====
      * Toda la transición vive en el contenedor raíz, no en el pie: con paradas
      * muy separadas (0/45/75/100) el navegador reparte la mezcla a lo largo de
-     * casi toda la altura y desaparece la sensación de línea dura. El borgoña
-     * final es el mismo #5A1020 del pie.
-     * 0% blanco puro · 45% rosa papel · 75% rosa arcilla · 100% borgoña */
+     * casi toda la altura y desaparece la sensación de línea dura. El esmeralda
+     * final (#064E3B) es el mismo tono con el que se leen los accesos rápidos.
+     * 0% blanco puro · 45% menta papel · 75% menta · 100% esmeralda profundo */
 
     /* ===== GRANO: capa fija independiente =====
      * SVG feTurbulence incrustado (sin peticiones). No toca el degradado: es
@@ -164,19 +164,19 @@
       min-height: 100dvh;
       display: flex;
       flex-direction: column;
-      background: linear-gradient(180deg, #FFFFFF 0%, #FCF5F5 45%, #ECA6A6 75%, #5A1020 100%);
+      background: linear-gradient(180deg, #FFFFFF 0%, #F2FBF7 45%, #68C39F 75%, #064E3B 100%);
       touch-action: manipulation;
     }
 
     /* ═════════════════════════════════════════════════════════════
      * GLASSMORPHISM CLARO — clima de iOS Liquid Glass, pero sobre papel
-     * Blanco al 60 %, borde negro al 9 % y blur(16px): el reflejo rojo del
+     * Blanco al 60 %, borde negro al 9 % y blur(16px): el reflejo verde del
      * fondo se lee a través del cristal sin ensuciar los textos.
      * ═══════════════════════════════════════════════════════════ */
     .ios-liquid-glass {
-      background: rgba(255, 255, 255, .60);
-      backdrop-filter: blur(20px) saturate(140%);
-      -webkit-backdrop-filter: blur(20px) saturate(140%);
+      background: rgba(255, 255, 255, .75);
+      backdrop-filter: blur(16px) saturate(140%);
+      -webkit-backdrop-filter: blur(16px) saturate(140%);
       border: 1px solid rgba(24, 24, 27, .07);
       box-shadow:
         0 12px 30px -14px rgba(24, 24, 27, .22),
@@ -189,15 +189,15 @@
       border-color: rgba(24, 24, 27, .07);
       background: rgba(255, 255, 255, .62);
     }
-    /* Botón ↑↓: círculo rojo sólido sobre el seam. El anillo del color de la
-       página separa el botón de los dos cristales para que ninguna línea de
-       las tarjetas lo atraviese. */
+    /* Botón ↑↓: círculo esmeralda sólido sobre el seam, con el icono de flechas
+       en blanco. El anillo del color de la página (menta muy claro) separa el
+       botón de los dos cristales para que ninguna línea los atraviese. */
     .swap-btn {
-      background-color: #DC2626;
-      border: 1px solid rgba(185, 28, 28, .45);
-      box-shadow: 0 0 0 5px #FCF3F4, 0 10px 24px -8px rgba(220, 38, 38, .55);
+      background-color: #10B981;
+      border: 1px solid rgba(255, 255, 255, .65);
+      box-shadow: 0 0 0 5px #ECFDF5, 0 10px 24px -8px rgba(16, 185, 129, .50);
     }
-    .swap-btn:hover { background-color: #B91C1C; }
+    .swap-btn:hover { background-color: #059669; }
     /* Pastilla de ícono: 38×38, radio 12, íconos 18×18 centrados geométricamente */
     .ios-icon-btn {
       display: inline-flex; align-items: center; justify-content: center;
@@ -207,10 +207,10 @@
       cursor: pointer; -webkit-tap-highlight-color: transparent;
       transition: all .2s ease;
     }
-    .ios-icon-btn:hover { color: #DC2626; border-color: rgba(220, 38, 38, .40); background-color: rgba(220, 38, 38, .07); }
-    .ios-icon-btn:active { transform: scale(.94); color: #DC2626; border-color: #DC2626; }
-    .ios-icon-btn:focus-visible { outline: 2px solid #DC2626; outline-offset: 2px; }
-    .ios-icon-btn[data-copied] { color: #DC2626; }
+    .ios-icon-btn:hover { color: #10B981; border-color: rgba(16, 185, 129, .40); background-color: rgba(16, 185, 129, .08); }
+    .ios-icon-btn:active { transform: scale(.94); color: #059669; border-color: #059669; }
+    .ios-icon-btn:focus-visible { outline: 2px solid #10B981; outline-offset: 2px; }
+    .ios-icon-btn[data-copied] { color: #059669; }
 
     /* ── Semántica de las dos tarjetas del conversor (cursor + foco) ──
        El acabado sigue siendo .ios-liquid-glass: estas clases no tocan
@@ -240,11 +240,13 @@
       letter-spacing: .06em; text-transform: uppercase;
       color: #18181B;
     }
+    /* Píldora activa: menta muy suave, borde verde claro y código en verde
+       oscuro; la de sólo lectura se queda en cristal neutro con texto negro. */
     .amount-card .currency-pill {
-      background: rgba(220, 38, 38, .08);
-      border-color: rgba(220, 38, 38, .28);
+      background: #D1FAE5;
+      border-color: #6EE7B7;
     }
-    .amount-card .currency-code { color: #DC2626; }
+    .amount-card .currency-code { color: #047857; }
 
     /* Superior = superficie editable y PROTAGONISTA: cristal un punto más
        denso que el resto (72 % en vez de 60 %) y borde rojo fijo, para que se
@@ -264,10 +266,10 @@
        Se reescribe box-shadow completo para conservar el bisel interno del
        cristal; el rojo es la ÚNICA señal de que el campo está en edición. */
     .amount-card:focus-within {
-      border-color: rgba(220, 38, 38, .55);
+      border-color: rgba(16, 185, 129, .55);
       box-shadow:
-        0 0 0 1px rgba(220, 38, 38, .28),
-        0 8px 26px -14px rgba(220, 38, 38, .45),
+        0 0 0 1px rgba(16, 185, 129, .28),
+        0 8px 26px -14px rgba(16, 185, 129, .40),
         0 12px 30px -14px rgba(24, 24, 27, .22),
         inset 0 1px 0 rgba(255, 255, 255, .80),
         inset 0 -1px 2px rgba(24, 24, 27, .03);
@@ -310,7 +312,7 @@
     }
     .rate-col:hover { opacity: .8; }
     .rate-col:active { transform: scale(.98); }
-    .rate-col:focus-visible { outline: 2px solid #DC2626; outline-offset: -2px; border-radius: 12px; }
+    .rate-col:focus-visible { outline: 2px solid #10B981; outline-offset: -2px; border-radius: 12px; }
     /* Monto: Space Grotesk 700, tabular y compacto (16px; baja a 14px solo en móviles estrechos) */
     .rate-col .rate-price {
       font-family: "Space Grotesk", system-ui, sans-serif;
@@ -333,8 +335,8 @@
       position: absolute; left: 50%; bottom: 1px;
       width: 16px; height: 2px; border-radius: 2px;
       transform: translateX(-50%);
-      background: #DC2626;
-      box-shadow: 0 0 8px rgba(220, 38, 38, .55);
+      background: #10B981;
+      box-shadow: 0 0 8px rgba(16, 185, 129, .55);
       opacity: 0; transition: opacity .25s ease;
     }
     .rate-col.rate-selected,
@@ -343,9 +345,9 @@
       /* Destello sin clipping: 'ellipse closest-side' termina en opacidad 0 EXACTAMENTE
          en los 4 bordes del chip → la luz se desvanece por completo antes del borde
          físico del cristal y de los divisores (nunca se corta arriba/abajo). */
-      background: radial-gradient(ellipse closest-side at center, rgba(220, 38, 38, .13) 0%, rgba(220, 38, 38, .065) 38%, rgba(220, 38, 38, .024) 66%, transparent 100%);
+      background: radial-gradient(ellipse closest-side at center, rgba(16, 185, 129, .14) 0%, rgba(16, 185, 129, .07) 38%, rgba(16, 185, 129, .026) 66%, transparent 100%);
     }
-    .rate-col.rate-selected .rate-sigla { color: #DC2626; font-weight: 600; letter-spacing: .05em; }
+    .rate-col.rate-selected .rate-sigla { color: #059669; font-weight: 600; letter-spacing: .05em; }
     .rate-col.rate-selected::after { opacity: 1; }
 
     /* ===== Auto-ajuste del monto resultante: el número nunca desborda el glass ===== */
@@ -397,11 +399,11 @@
       * { transition-duration: 0.01ms !important; }
     }
 
-    /* ===== Accesos rápidos: ya sobre el borgoña del pie =====
-       Inactivos: aro de cristal blanco al 10 % con icono blanco al 78 % y
-       etiqueta al 62 % (legibles sobre oscuro, sin competir). Activo
-       (Calculadora): círculo rosa suave, icono rojo vibrante y etiqueta
-       blanca en semibold; es el único que se enciende. */
+    /* ===== Accesos rápidos: ya sobre el esmeralda profundo del pie =====
+       Inactivos: aro de cristal blanco al 15 % con icono y etiqueta blancos al
+       75 % (legibles sobre oscuro, sin competir). Activo (Calculadora): círculo
+       menta claro, icono esmeralda oscuro y etiqueta blanca en semibold; es el
+       único que se enciende. */
     .quick-action {
       display: flex; flex-direction: column; align-items: center; gap: 8px;
       padding: 0; background: none; border: 0; color: #FFFFFF;
@@ -410,24 +412,24 @@
     .quick-icon {
       display: grid; place-items: center;
       width: 52px; height: 52px; border-radius: 999px;
-      background: rgba(255, 255, 255, .10);
-      border: 1px solid rgba(255, 255, 255, .22);
+      background: rgba(255, 255, 255, .15);
+      border: 1px solid rgba(255, 255, 255, .30);
       -webkit-backdrop-filter: blur(10px);
       backdrop-filter: blur(10px);
       box-shadow: inset 0 1px 0 rgba(255, 255, 255, .18);
-      color: rgba(255, 255, 255, .78);
+      color: rgba(255, 255, 255, .75);
       transition: transform .18s ease, background-color .18s ease, border-color .18s ease, color .18s ease;
     }
     .quick-action:hover .quick-icon { background: rgba(255, 255, 255, .18); border-color: rgba(255, 255, 255, .34); color: #FFFFFF; }
     .quick-action:active .quick-icon { transform: scale(.94); }
-    .quick-action:focus-visible .quick-icon { outline: 2px solid #FBD5D9; outline-offset: 3px; }
-    .quick-label { font-size: 10px; line-height: 1.1; letter-spacing: .01em; color: rgba(255, 255, 255, .62); }
+    .quick-action:focus-visible .quick-icon { outline: 2px solid #6EE7B7; outline-offset: 3px; }
+    .quick-label { font-size: 10px; line-height: 1.1; letter-spacing: .01em; color: rgba(255, 255, 255, .75); }
 
     .quick-action.is-active .quick-icon {
-      background: #FBD5D9;
-      border-color: rgba(255, 255, 255, .85);
-      color: #DC2626;
-      box-shadow: 0 0 0 4px rgba(251, 213, 217, .14), 0 10px 22px -10px rgba(0, 0, 0, .55);
+      background: #D1FAE5;
+      border-color: rgba(255, 255, 255, .90);
+      color: #059669;
+      box-shadow: 0 0 0 4px rgba(209, 250, 229, .18), 0 10px 22px -10px rgba(0, 0, 0, .55);
     }
     .quick-action.is-active .quick-label { color: #FFFFFF; font-weight: 600; }
 
@@ -613,7 +615,7 @@
           <p id="install-sub" class="text-xs text-white/60">Acceso directo desde tu pantalla de inicio.</p>
         </div>
         <button id="install-btn" type="button"
-          class="h-10 shrink-0 rounded-xl bg-white px-4 text-sm font-bold text-[#B3122A] transition-colors hover:bg-rose-50 active:scale-95">
+          class="h-10 shrink-0 rounded-xl bg-white px-4 text-sm font-bold text-[#047857] transition-colors hover:bg-emerald-50 active:scale-95">
           Instalar
         </button>
         <button id="install-dismiss" type="button" aria-label="Cerrar"
@@ -1035,7 +1037,7 @@
       try {
         await navigator.clipboard.writeText(value);
         icon.innerHTML = CHECK_SVG;
-        button.dataset.copied = 'true';       // CSS [.ios-icon-btn[data-copied]] → rojo #DC2626
+        button.dataset.copied = 'true';       // CSS [.ios-icon-btn[data-copied]] → esmeralda #059669
         setTimeout(() => {
           icon.innerHTML = COPY_SVG;
           delete button.dataset.copied;       // restaura el color base del hermano (simetría exacta)
