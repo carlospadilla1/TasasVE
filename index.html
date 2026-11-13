@@ -6,7 +6,6 @@
   <title>Tasas Venezuela · Dólar BCV y P2P en vivo</title>
   <meta name="description" content="Calculadora y tasas de cambio del dólar en Venezuela (BCV y Binance P2P) en vivo. PWA instalable." />
 
-  <!-- PWA -->
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#FFFFFF" />
   <meta name="mobile-web-app-capable" content="yes" />
@@ -15,26 +14,22 @@
   <meta name="apple-mobile-web-app-title" content="Tasas VE" />
   <link rel="icon" href="icons/favicon.svg" type="image/svg+xml" />
 
-  <!-- Tipografía única global: Space Grotesk (500/600/700) para texto Y cifras -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet"
     href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&display=swap" />
 
-  <!-- Tailwind CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Sin librería de animación: no hay splash ni entradas que cargar. -->
+
   <script>
     tailwind.config = {
       theme: {
         extend: {
           fontFamily: {
-            // Space Grotesk: fuente ÚNICA global (texto + cifras), trazo geométrico
             sans: ['"Space Grotesk"', '-apple-system', 'BlinkMacSystemFont', 'system-ui', 'sans-serif'],
             num: ['"Space Grotesk"', 'system-ui', 'sans-serif'],
           },
           letterSpacing: {
-            // Números compactos y estables (spec: -0.02em)
             tight: '-0.02em',
           },
         },
@@ -44,18 +39,14 @@
 
   <style>
 
-    /* Input numérico limpio, sin controles nativos */
     input[type='number']::-webkit-outer-spin-button,
     input[type='number']::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
     input[type='number'] { -moz-appearance: textfield; appearance: textfield; }
 
-    /* Foco accesible coherente con el acento esmeralda */
     :focus-visible { outline: 2px solid #10B981; outline-offset: 2px; }
-    /* Selección de texto en toda la app: menta suave sobre esmeralda profundo */
+
     ::selection { background: #D1FAE5; color: #064E3B; }
-    /* Badge de estado/tasa bajo la calculadora: píldora esmeralda con texto
-       blanco y cifras tabulares de Space Grotesk. Es el único bloque de color
-       pleno de la pantalla, así que ancla la jerarquía del cálculo. */
+
     .result-badge {
       display: inline-flex; align-items: center; justify-content: center;
       margin: 16px auto 0;
@@ -69,17 +60,6 @@
       font-variant-numeric: tabular-nums;
     }
 
-    /* ===== FONDO: un único degradado a pantalla completa =====
-     * Toda la transición vive en el contenedor raíz, no en el pie: con paradas
-     * muy separadas (0/45/75/100) el navegador reparte la mezcla a lo largo de
-     * casi toda la altura y desaparece la sensación de línea dura. El esmeralda
-     * final (#064E3B) es el mismo tono con el que se leen los accesos rápidos.
-     * 0% blanco puro · 45% menta papel · 75% menta · 100% esmeralda profundo */
-
-    /* ===== GRANO: capa fija independiente =====
-     * SVG feTurbulence incrustado (sin peticiones). No toca el degradado: es
-     * una capa aparte, por encima del fondo y por debajo del contenido
-     * (tarjetas con z-index 100). pointer-events:none para no bloquear clics. */
     body::before {
       content: "";
       position: fixed;
@@ -90,27 +70,15 @@
       pointer-events: none;
       z-index: 50;
       opacity: 0.06;
-      /* Sin background-size el SVG (sin width/height propios) se estira al
-         viewport entero y el ruido se ve como manchas; fijándolo a 200px
-         recupera el grano fino que buscábamos. */
+
       background-size: 200px 200px;
       background-repeat: repeat;
       background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
     }
 
-    /* Los hijos directos del escenario no deben poder ensanchar el layout con
-       su min-content (un texto ahora mismo podría empujar la columna); así el
-       ancho siempre queda dentro del viewport. */
     #stage > *,
     #center > * { min-width: 0; }
 
-    /* Balanceo vertical: el encabezado queda arriba (detrás solo el relleno
-       "--air-top") y el bloque de tarjetas flota centrado en el espacio libre
-       gracias a los márgenes automáticos de #center. El hueco encabezado→
-       tarjetas y el de cálculo→botonera miden igual porque el relleno superior
-       del pie ("--air-dock") es idéntico al margen inferior del encabezado.
-       Sin aire sobrante los márgenes se anulan y el bloque se comprime, así que
-       nunca aparece scroll. */
     body #stage {
       gap: 0;
       padding-top: var(--air-top);
@@ -123,21 +91,16 @@
       margin-bottom: auto;
     }
 
-    /* El pie ya no pinta color: deja ver el degradado del contenedor raíz. */
     .dock { position: relative; }
-    /* Separación menú → © dinámica: 11dvh del alto real, entre 5rem y 8rem. Al
-       ser un margen (no un hueco fijo) el navegador lo comprime en pantallas
-       bajas y el pie sigue sin desbordar el 100dvh. */
+
     .dock-nav { margin-bottom: clamp(5rem, 11dvh, 8rem); }
-    /* Relleno propio del pie: el © nunca toca el borde inferior de la pantalla. */
+
     .dock-inner {
       padding-top: var(--air-dock);
       padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
     }
     .dock-copy { color: rgba(255, 255, 255, .72); }
 
-    /* Los dos puntos del reloj: titileo suave de 1 s. Se anima la opacidad
-       (nunca display ni ancho) para que la cifra no se desplace al parpadear. */
     @keyframes clockColonBlink {
       0%, 100% { opacity: 1; }
       50%      { opacity: .15; }
@@ -147,18 +110,9 @@
       animation: clockColonBlink 1s ease-in-out infinite;
     }
 
+    /* Layout */
     html, body { height: 100dvh; }
     body {
-      /* Aire exterior: relleno superior del escenario (encabezado despegado
-         del techo) y relleno superior del pie. Este último debe coincidir con
-         el margen inferior del encabezado para que los dos huecos del bloque
-         central midan lo mismo. Los 2rem base más 1.5rem de empuje bajan el
-         bloque central 12px (la mitad del relleno añadido, porque el resto se
-         lo quita a los márgenes automáticos); sigue sin haber scroll porque el
-         aire sobrante de las pantallas altas es mayor que ese empuje. El
-         empuje entra de forma progresiva a partir de 821px de alto (donde
-         vuelve la tipografía normal) y se topa en los 1.5rem, así que en el
-         límite del breakpoint no aparece ningún salto brusco. */
       --air-top: calc(2rem + min(1.5rem, max(0px, (100dvh - 821px) * 0.75)));
       --air-dock: 1rem;
       min-height: 100dvh;
@@ -168,11 +122,7 @@
       touch-action: manipulation;
     }
 
-    /* ═════════════════════════════════════════════════════════════
-     * GLASSMORPHISM CLARO — clima de iOS Liquid Glass, pero sobre papel
-     * Blanco al 60 %, borde negro al 9 % y blur(16px): el reflejo verde del
-     * fondo se lee a través del cristal sin ensuciar los textos.
-     * ═══════════════════════════════════════════════════════════ */
+    /* Glass */
     .ios-liquid-glass {
       background: rgba(255, 255, 255, .75);
       backdrop-filter: blur(16px) saturate(140%);
@@ -183,22 +133,19 @@
         inset 0 1px 0 rgba(255, 255, 255, .70),
         inset 0 -1px 2px rgba(24, 24, 27, .03);
     }
-    /* Variante botones: cristal blanco algo más opaco, borde sutil (se enciende
-       en rojo solo al interactuar) */
+
     .ios-glass-btn {
       border-color: rgba(24, 24, 27, .07);
       background: rgba(255, 255, 255, .62);
     }
-    /* Botón ↑↓: círculo esmeralda sólido sobre el seam, con el icono de flechas
-       en blanco. El anillo del color de la página (menta muy claro) separa el
-       botón de los dos cristales para que ninguna línea los atraviese. */
+
     .swap-btn {
       background-color: #10B981;
       border: 1px solid rgba(255, 255, 255, .65);
       box-shadow: 0 0 0 5px #ECFDF5, 0 10px 24px -8px rgba(16, 185, 129, .50);
     }
     .swap-btn:hover { background-color: #059669; }
-    /* Pastilla de ícono: 38×38, radio 12, íconos 18×18 centrados geométricamente */
+
     .ios-icon-btn {
       display: inline-flex; align-items: center; justify-content: center;
       width: 38px; height: 38px; flex-shrink: 0;
@@ -212,13 +159,6 @@
     .ios-icon-btn:focus-visible { outline: 2px solid #10B981; outline-offset: 2px; }
     .ios-icon-btn[data-copied] { color: #059669; }
 
-    /* ── Semántica de las dos tarjetas del conversor (cursor + foco) ──
-       El acabado sigue siendo .ios-liquid-glass: estas clases no tocan
-       background, radio, borde base ni backdrop-filter. */
-    /* ── Identificador de moneda: píldora bandera + código ISO ──
-       Sustituye al texto suelto de la esquina: la divisa y su país se leen de
-       un golpe. La de la tarjeta editable va teñida de Volt; la de sólo
-       lectura se queda en cristal neutro para no competir con la de arriba. */
     .currency-pill {
       display: inline-flex; align-items: center; gap: 6px;
       padding: 3px 9px 3px 8px;
@@ -227,8 +167,7 @@
       border: 1px solid rgba(24, 24, 27, .10);
       line-height: 1; user-select: none;
     }
-    /* Bandera: SVG de 16×11 (el emoji de bandera no existe en Windows, que
-       pinta "US"/"VE" en texto; el SVG se ve igual en móvil y escritorio). */
+
     .currency-flag {
       display: block; width: 16px; height: 11px; flex-shrink: 0;
       border-radius: 2px; overflow: hidden;
@@ -240,17 +179,13 @@
       letter-spacing: .06em; text-transform: uppercase;
       color: #18181B;
     }
-    /* Píldora activa: menta muy suave, borde verde claro y código en verde
-       oscuro; la de sólo lectura se queda en cristal neutro con texto negro. */
+
     .amount-card .currency-pill {
       background: #D1FAE5;
       border-color: #6EE7B7;
     }
     .amount-card .currency-code { color: #047857; }
 
-    /* Superior = superficie editable y PROTAGONISTA: cristal un punto más
-       denso que el resto (72 % en vez de 60 %) y borde rojo fijo, para que se
-       lea como campo editable y no como un dato más de la pantalla. */
     .amount-card {
       cursor: pointer;
       background: rgba(255, 255, 255, .78);
@@ -262,9 +197,7 @@
       transition: border-color .2s ease, box-shadow .2s ease;
     }
     .amount-card input { cursor: text; }
-    /* Anillo rojo sólo mientras el input tiene el foco (:focus-within).
-       Se reescribe box-shadow completo para conservar el bisel interno del
-       cristal; el rojo es la ÚNICA señal de que el campo está en edición. */
+
     .amount-card:focus-within {
       border-color: rgba(16, 185, 129, .55);
       box-shadow:
@@ -274,46 +207,36 @@
         inset 0 1px 0 rgba(255, 255, 255, .80),
         inset 0 -1px 2px rgba(24, 24, 27, .03);
     }
-    /* Inferior = sólo lectura: sin cursor de acción, sin hover y sin foco.
-       Los botones de limpiar/copiar mantienen su propio cursor: pointer. */
+
     .result-card { cursor: default; }
 
-    /* Las tarjetas del conversor NO llevan estilo propio: comparten EXACTAMENTE
-       la clase .ios-liquid-glass del módulo superior (mismo background, mismo
-       backdrop-filter, mismo borde y radio). El acabado liso de las tres
-       superficies: al no existir animación de entrada tampoco hay transform
-       residual que pueda aislar el backdrop-filter. */
-
-    /* ===== MÓDULO DE COTIZACIONES: contenedor horizontal Liquid Glass =====
-     * 1 cristal · grid estricto de 3 columnas iguales · divisores de 1px
-     * entre columnas · columnas seleccionables sin sub-tarjetas. */
+    /* Rates */
     .rates-glass {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));   /* 3 iguales, sin colapso de ancho */
+      grid-template-columns: repeat(3, minmax(0, 1fr));   
       overflow: hidden;
       width: 100%;
-      padding: 22px 8px;                                  /* aire vertical: la luz del chip activo respira hasta opacidad 0 */
+      padding: 22px 8px;                                  
       border-radius: 20px;
     }
-    /* Divisores verticales sutiles: solo en las dos primeras columnas */
+
     .rates-glass > .rate-col:not(:last-child) { border-right: 1px solid rgba(24, 24, 27, .08); }
 
-    /* Columna: 3 niveles centrados sobre el mismo eje, sin sub-tarjetas */
     .rate-col {
       position: relative;
       display: flex; flex-direction: column; align-items: center; justify-content: center;
-      gap: 4px;                                           /* aire uniforme sigla → nombre → monto */
+      gap: 4px;                                           
       min-width: 0; padding: 10px 6px;
-      white-space: nowrap;                                /* prohibido salto de línea en cualquier texto */
+      white-space: nowrap;                                
       text-align: center;
       cursor: pointer; -webkit-tap-highlight-color: transparent;
-      opacity: .5;                                        /* inactivas: atenuadas */
+      opacity: .5;                                        
       transition: all .25s cubic-bezier(.4, 0, .2, 1);
     }
     .rate-col:hover { opacity: .8; }
     .rate-col:active { transform: scale(.98); }
     .rate-col:focus-visible { outline: 2px solid #10B981; outline-offset: -2px; border-radius: 12px; }
-    /* Monto: Space Grotesk 700, tabular y compacto (16px; baja a 14px solo en móviles estrechos) */
+
     .rate-col .rate-price {
       font-family: "Space Grotesk", system-ui, sans-serif;
       font-size: clamp(14px, 4vw, 16px);
@@ -322,14 +245,11 @@
       font-variant-numeric: tabular-nums;
       letter-spacing: -.02em;
     }
-    /* Prefijo monetario "Bs.": jerarquía secundaria (12px / 500 / 55%) */
+
     .rate-cur { font-size: .75rem; font-weight: 500; color: rgba(24, 24, 27, .50); margin-right: .25rem; }
 
-    /* Placeholder del resultado: espejo EXACTO del placeholder del input superior
-       (mismo gris semitransparente, mismo tamaño heredado de la cifra grande) */
     .result-ph { color: rgba(24, 24, 27, .22); }
 
-    /* Estado activo minimalista: halo radial + píldora luminosa, sin cajas con borde */
     .rate-col::after {
       content: '';
       position: absolute; left: 50%; bottom: 1px;
@@ -342,22 +262,14 @@
     .rate-col.rate-selected,
     .rate-col.rate-selected:hover {
       opacity: 1;
-      /* Destello sin clipping: 'ellipse closest-side' termina en opacidad 0 EXACTAMENTE
-         en los 4 bordes del chip → la luz se desvanece por completo antes del borde
-         físico del cristal y de los divisores (nunca se corta arriba/abajo). */
+
       background: radial-gradient(ellipse closest-side at center, rgba(16, 185, 129, .14) 0%, rgba(16, 185, 129, .07) 38%, rgba(16, 185, 129, .026) 66%, transparent 100%);
     }
     .rate-col.rate-selected .rate-sigla { color: #059669; font-weight: 600; letter-spacing: .05em; }
     .rate-col.rate-selected::after { opacity: 1; }
 
-    /* ===== Auto-ajuste del monto resultante: el número nunca desborda el glass ===== */
     #result { white-space: nowrap; }
 
-    /* ===== Pantallas bajas (≤760px de alto) =====
-     * Sin scroll de página, el contenido debe caber en el alto disponible; aquí
-     * se comprime tipografía y relleno. Los selectores van con "body" delante
-     * para ganar en especificidad a las utilidades de Tailwind (que se inyectan
-     * después de esta hoja), sin recurrir a !important. */
     @media (max-height: 820px) {
       body { --air-top: 12px; --air-dock: 10px; }
       body #center { gap: 12px; }
@@ -371,8 +283,6 @@
       body .quick-label { font-size: 9px; }
     }
 
-    /* Aún más bajo (móvil en horizontal, ~545px útiles): un paso extra sin
-       ocultar contenido, solo cerrando rellenos. */
     @media (max-height: 580px) {
       body { --air-top: 3px; --air-dock: 6px; }
       body #center { gap: 8px; }
@@ -380,14 +290,11 @@
       body .rates-glass { padding: 6px; }
       body .amount-card,
       body .result-card { padding: 10px 16px; }
-      /* En pantallas muy bajas el aire del pie se modera para no aplastar
-         las tarjetas: 4rem, aún 16px más que antes. */
+
       body .dock-nav { margin-bottom: 4.5rem; }
       body .result-badge { margin-top: 3px; }
     }
 
-    /* Suelo para móvil en horizontal (~545px útiles): 4.25rem, el mínimo de
-       aire que aún deja respirar las tarjetas dentro del viewport. */
     @media (max-height: 560px) {
       body .dock-nav { margin-bottom: 4.25rem; }
       body .rates-glass { padding: 10px 8px; }
@@ -396,14 +303,11 @@
 
     @media (prefers-reduced-motion: reduce) {
       .clock-colon { animation: none; }
+      .ornament { animation: none; }
       * { transition-duration: 0.01ms !important; }
     }
 
-    /* ===== Accesos rápidos: ya sobre el esmeralda profundo del pie =====
-       Inactivos: aro de cristal blanco al 15 % con icono y etiqueta blancos al
-       75 % (legibles sobre oscuro, sin competir). Activo (Calculadora): círculo
-       menta claro, icono esmeralda oscuro y etiqueta blanca en semibold; es el
-       único que se enciende. */
+    /* Dock nav */
     .quick-action {
       display: flex; flex-direction: column; align-items: center; gap: 8px;
       padding: 0; background: none; border: 0; color: #FFFFFF;
@@ -433,17 +337,250 @@
     }
     .quick-action.is-active .quick-label { color: #FFFFFF; font-weight: 600; }
 
-    /* Footer estático: sin animación de entrada (cero delay visual). */
+    /* Ambient VFX */
+    .christmas-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 140px;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    .ornament {
+      position: absolute;
+      top: 0;
+      transform-origin: 50% 0%;
+      animation-name: ornamentSwing;
+      animation-timing-function: cubic-bezier(0.45, 0.05, 0.55, 0.95);
+      animation-iteration-count: infinite;
+      animation-direction: alternate;
+      will-change: transform;
+    }
+
+    .ornament--far { animation-name: ornamentSwingFar; }
+
+    .ornament-thread {
+      display: block;
+      width: .5px;
+      margin: 0 auto;
+      background: linear-gradient(180deg, rgba(0, 0, 0, .12) 0%, rgba(0, 0, 0, .01) 100%);
+    }
+
+    .ornament-ball { display: block; }
+
+    .ornament-sparkle {
+      position: absolute;
+      fill: rgba(255, 255, 255, .95);
+      filter: blur(.5px) drop-shadow(0 0 2px rgba(253, 230, 138, .65));
+      animation: twinkle 3.4s ease-in-out infinite;
+    }
+
+    .ornament-1 { left: 62%; animation-duration: 6.7s; animation-delay: -1.2s; }
+    .ornament-1 .ornament-thread { height: 62px; }
+    .ornament-1 .ornament-ball   { width: 44px; height: 44px; filter: blur(2.5px); opacity: .65; }
+
+    .ornament-2 { left: 78%; animation-duration: 5.2s; animation-delay: -2.8s; }
+    .ornament-2 .ornament-thread { height: 48px; }
+    .ornament-2 .ornament-ball   { width: 40px; height: 40px; filter: blur(2.5px); opacity: .65; }
+
+    .ornament-3 { left: 93%; animation-duration: 7.9s; animation-delay: -3.6s; }
+    .ornament-3 .ornament-thread { height: 30px; }
+    .ornament-3 .ornament-ball   { width: 36px; height: 36px; filter: blur(2.5px); opacity: .65; }
+
+    .ornament-4 { left: 3%;  animation-duration: 9.1s; animation-delay: -4.5s; }
+    .ornament-4 .ornament-thread { height: 34px; }
+    .ornament-4 .ornament-ball   { width: 22px; height: 22px; filter: blur(6px); opacity: .35; }
+
+    .ornament-5 { left: 70%; animation-duration: 9.1s; animation-delay: -6.2s; }
+    .ornament-5 .ornament-thread { height: 20px; }
+    .ornament-5 .ornament-ball   { width: 18px; height: 18px; filter: blur(6px); opacity: .35; }
+
+    .ornament-6 { left: 87%; animation-duration: 7.9s; animation-delay: -5.1s; }
+    .ornament-6 .ornament-thread { height: 26px; }
+    .ornament-6 .ornament-ball   { width: 26px; height: 26px; filter: blur(6px); opacity: .35; }
+
+    .sparkle-a { left: -14px; top: 46px;  width: 9px; height: 9px; }
+    .sparkle-b { right: -12px; top: 64px; width: 7px; height: 7px; animation-delay: -1.1s; }
+    .sparkle-c { left: -10px; top: 26px;  width: 6px; height: 6px; animation-delay: -2.2s; }
+    .sparkle-d { right: -14px; top: 40px; width: 8px; height: 8px; animation-delay: -.6s; }
+
+    @keyframes ornamentSwing {
+      from { transform: translate3d(0, 0, 0) rotate(-3.5deg); }
+      to   { transform: translate3d(0, 0, 0) rotate(3.5deg); }
+    }
+
+    @keyframes ornamentSwingFar {
+      from { transform: translate3d(0, 0, 0) rotate(-1.8deg); }
+      to   { transform: translate3d(0, 0, 0) rotate(1.8deg); }
+    }
+
+    @keyframes twinkle {
+      0%, 100% { opacity: .15; transform: scale(.7); }
+      50%      { opacity: .9;  transform: scale(1.1); }
+    }
+
+    /* Snow */
+    .snow {
+      position: fixed;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    .snow-flake {
+      position: absolute;
+      top: -6vh;
+      border-radius: 9999px;
+      background: radial-gradient(circle at 35% 30%, rgba(255, 255, 255, .95) 0%, rgba(255, 255, 255, .55) 58%, rgba(16, 185, 129, .35) 100%);
+      box-shadow: 0 0 0 .5px rgba(16, 185, 129, .20), 0 0 4px rgba(16, 185, 129, .16);
+      animation-name: snowFall;
+      animation-timing-function: linear;
+      animation-iteration-count: infinite;
+      will-change: transform;
+    }
+
+    @keyframes snowFall {
+      0%   { transform: translate3d(0, 0, 0); opacity: 0; }
+      8%   { opacity: 1; }
+      38%  { transform: translate3d(var(--drift, 6px), 38dvh, 0); }
+      72%  { transform: translate3d(calc(var(--drift, 6px) * -1), 74dvh, 0); }
+      100% { transform: translate3d(0, 106dvh, 0); opacity: .8; }
+    }
+
   </style>
 </head>
 
 <body class="relative flex h-[100dvh] flex-col overflow-hidden font-sans text-zinc-900 antialiased touch-manipulation">
 
+  <div class="christmas-bg" aria-hidden="true">
+
+    <div class="ornament ornament-1">
+      <span class="ornament-thread"></span>
+      <svg class="ornament-ball" viewBox="0 0 48 48">
+        <defs><radialGradient id="orbA" cx="34%" cy="26%" r="78%">
+          <stop offset="0%" stop-color="#059669"/><stop offset="45%" stop-color="#064E3B"/><stop offset="100%" stop-color="#022C22"/>
+        </radialGradient></defs>
+        <rect x="20" y="1" width="8" height="4" rx="1.5" fill="#FDE68A"/>
+        <circle cx="24" cy="28" r="19" fill="url(#orbA)"/>
+        <ellipse cx="16" cy="19" rx="6" ry="4" fill="#FFFFFF" opacity=".38"/>
+        <ellipse cx="18" cy="21" rx="2.4" ry="1.5" fill="#FFFFFF" opacity=".85"/>
+      </svg>
+      <svg class="ornament-sparkle sparkle-a" viewBox="0 0 24 24"><path d="M12 0 13.6 10.4 24 12 13.6 13.6 12 24 10.4 13.6 0 12 10.4 10.4Z"/></svg>
+      <svg class="ornament-sparkle sparkle-c" viewBox="0 0 24 24"><path d="M12 0 13.6 10.4 24 12 13.6 13.6 12 24 10.4 13.6 0 12 10.4 10.4Z"/></svg>
+    </div>
+
+    <div class="ornament ornament-2">
+      <span class="ornament-thread"></span>
+      <svg class="ornament-ball" viewBox="0 0 48 48">
+        <defs><radialGradient id="orbB" cx="34%" cy="26%" r="78%">
+          <stop offset="0%" stop-color="#EF4444"/><stop offset="50%" stop-color="#7F1D1D"/><stop offset="100%" stop-color="#450A0A"/>
+        </radialGradient></defs>
+        <rect x="20" y="1" width="8" height="4" rx="1.5" fill="#FDE68A"/>
+        <circle cx="24" cy="28" r="19" fill="url(#orbB)"/>
+        <ellipse cx="16" cy="19" rx="6" ry="4" fill="#FFFFFF" opacity=".20"/>
+        <ellipse cx="18" cy="21" rx="2.2" ry="1.4" fill="#FFFFFF" opacity=".45"/>
+      </svg>
+      <svg class="ornament-sparkle sparkle-b" viewBox="0 0 24 24"><path d="M12 0 13.6 10.4 24 12 13.6 13.6 12 24 10.4 13.6 0 12 10.4 10.4Z"/></svg>
+    </div>
+
+    <div class="ornament ornament-3">
+      <span class="ornament-thread"></span>
+      <svg class="ornament-ball" viewBox="0 0 48 48">
+        <defs><radialGradient id="orbC" cx="34%" cy="26%" r="78%">
+          <stop offset="0%" stop-color="#F87171"/><stop offset="50%" stop-color="#DC2626"/><stop offset="100%" stop-color="#991B1B"/>
+        </radialGradient></defs>
+        <rect x="20" y="1" width="8" height="4" rx="1.5" fill="#FDE68A"/>
+        <circle cx="24" cy="28" r="19" fill="url(#orbC)"/>
+        <ellipse cx="16" cy="19" rx="6" ry="4" fill="#FFFFFF" opacity=".45"/>
+        <ellipse cx="18" cy="21" rx="2.2" ry="1.4" fill="#FFFFFF" opacity=".9"/>
+      </svg>
+    </div>
+
+    <div class="ornament ornament--far ornament-4">
+      <span class="ornament-thread"></span>
+      <svg class="ornament-ball" viewBox="0 0 48 48">
+        <defs><radialGradient id="orbD" cx="34%" cy="26%" r="78%">
+          <stop offset="0%" stop-color="#EF4444"/><stop offset="50%" stop-color="#7F1D1D"/><stop offset="100%" stop-color="#450A0A"/>
+        </radialGradient></defs>
+        <rect x="20" y="1" width="8" height="4" rx="1.5" fill="#FDE68A"/>
+        <circle cx="24" cy="28" r="19" fill="url(#orbD)"/>
+        <ellipse cx="16" cy="19" rx="6" ry="4" fill="#FFFFFF" opacity=".22"/>
+      </svg>
+      <svg class="ornament-sparkle sparkle-d" viewBox="0 0 24 24"><path d="M12 0 13.6 10.4 24 12 13.6 13.6 12 24 10.4 13.6 0 12 10.4 10.4Z"/></svg>
+    </div>
+
+    <div class="ornament ornament--far ornament-5">
+      <span class="ornament-thread"></span>
+      <svg class="ornament-ball" viewBox="0 0 48 48">
+        <defs><radialGradient id="orbE" cx="34%" cy="26%" r="78%">
+          <stop offset="0%" stop-color="#F87171"/><stop offset="50%" stop-color="#DC2626"/><stop offset="100%" stop-color="#991B1B"/>
+        </radialGradient></defs>
+        <rect x="20" y="1" width="8" height="4" rx="1.5" fill="#FDE68A"/>
+        <circle cx="24" cy="28" r="19" fill="url(#orbE)"/>
+        <ellipse cx="16" cy="19" rx="6" ry="4" fill="#FFFFFF" opacity=".40"/>
+      </svg>
+    </div>
+
+    <div class="ornament ornament--far ornament-6">
+      <span class="ornament-thread"></span>
+      <svg class="ornament-ball" viewBox="0 0 48 48">
+        <defs><radialGradient id="orbF" cx="34%" cy="26%" r="78%">
+          <stop offset="0%" stop-color="#059669"/><stop offset="45%" stop-color="#064E3B"/><stop offset="100%" stop-color="#022C22"/>
+        </radialGradient></defs>
+        <rect x="20" y="1" width="8" height="4" rx="1.5" fill="#FDE68A"/>
+        <circle cx="24" cy="28" r="19" fill="url(#orbF)"/>
+        <ellipse cx="16" cy="19" rx="6" ry="4" fill="#FFFFFF" opacity=".30"/>
+      </svg>
+    </div>
+
+  </div>
+
+  <!-- Snow -->
+  <div class="snow" aria-hidden="true">
+    <span class="snow-flake" style="left: 2%; width: 2px; height: 2px; filter: blur(1px); animation-duration: 13s; animation-delay: -1s; --drift: 8px;"></span>
+    <span class="snow-flake" style="left: 5%; width: 4px; height: 4px; filter: blur(1.5px); animation-duration: 14s; animation-delay: -4s; --drift: -9px;"></span>
+    <span class="snow-flake" style="left: 9%; width: 3px; height: 3px; filter: blur(2px); animation-duration: 15s; animation-delay: -7s; --drift: 10px;"></span>
+    <span class="snow-flake" style="left: 10%; width: 5px; height: 5px; filter: blur(2.5px); animation-duration: 16s; animation-delay: -10s; --drift: -11px;"></span>
+    <span class="snow-flake" style="left: 14%; width: 6px; height: 6px; filter: blur(3px); animation-duration: 17s; animation-delay: -13s; --drift: 12px;"></span>
+    <span class="snow-flake" style="left: 18%; width: 2px; height: 2px; filter: blur(1px); animation-duration: 18s; animation-delay: -16s; --drift: -13px;"></span>
+    <span class="snow-flake" style="left: 19%; width: 4px; height: 4px; filter: blur(1.5px); animation-duration: 19s; animation-delay: -19s; --drift: 14px;"></span>
+    <span class="snow-flake" style="left: 23%; width: 3px; height: 3px; filter: blur(2px); animation-duration: 20s; animation-delay: -22s; --drift: -15px;"></span>
+    <span class="snow-flake" style="left: 27%; width: 5px; height: 5px; filter: blur(2.5px); animation-duration: 21s; animation-delay: -25s; --drift: 16px;"></span>
+    <span class="snow-flake" style="left: 28%; width: 6px; height: 6px; filter: blur(3px); animation-duration: 22s; animation-delay: -3s; --drift: -17px;"></span>
+    <span class="snow-flake" style="left: 32%; width: 2px; height: 2px; filter: blur(1px); animation-duration: 23s; animation-delay: -6s; --drift: 18px;"></span>
+    <span class="snow-flake" style="left: 36%; width: 4px; height: 4px; filter: blur(1.5px); animation-duration: 24s; animation-delay: -9s; --drift: -19px;"></span>
+    <span class="snow-flake" style="left: 36%; width: 3px; height: 3px; filter: blur(2px); animation-duration: 25s; animation-delay: -12s; --drift: 20px;"></span>
+    <span class="snow-flake" style="left: 40%; width: 5px; height: 5px; filter: blur(2.5px); animation-duration: 13s; animation-delay: -15s; --drift: -21px;"></span>
+    <span class="snow-flake" style="left: 44%; width: 6px; height: 6px; filter: blur(3px); animation-duration: 14s; animation-delay: -18s; --drift: 22px;"></span>
+    <span class="snow-flake" style="left: 45%; width: 2px; height: 2px; filter: blur(1px); animation-duration: 15s; animation-delay: -21s; --drift: -8px;"></span>
+    <span class="snow-flake" style="left: 49%; width: 4px; height: 4px; filter: blur(1.5px); animation-duration: 16s; animation-delay: -24s; --drift: 9px;"></span>
+    <span class="snow-flake" style="left: 53%; width: 3px; height: 3px; filter: blur(2px); animation-duration: 17s; animation-delay: -2s; --drift: -10px;"></span>
+    <span class="snow-flake" style="left: 54%; width: 5px; height: 5px; filter: blur(2.5px); animation-duration: 18s; animation-delay: -5s; --drift: 11px;"></span>
+    <span class="snow-flake" style="left: 58%; width: 6px; height: 6px; filter: blur(3px); animation-duration: 19s; animation-delay: -8s; --drift: -12px;"></span>
+    <span class="snow-flake" style="left: 62%; width: 2px; height: 2px; filter: blur(1px); animation-duration: 20s; animation-delay: -11s; --drift: 13px;"></span>
+    <span class="snow-flake" style="left: 63%; width: 4px; height: 4px; filter: blur(1.5px); animation-duration: 21s; animation-delay: -14s; --drift: -14px;"></span>
+    <span class="snow-flake" style="left: 67%; width: 3px; height: 3px; filter: blur(2px); animation-duration: 22s; animation-delay: -17s; --drift: 15px;"></span>
+    <span class="snow-flake" style="left: 70%; width: 5px; height: 5px; filter: blur(2.5px); animation-duration: 23s; animation-delay: -20s; --drift: -16px;"></span>
+    <span class="snow-flake" style="left: 71%; width: 6px; height: 6px; filter: blur(3px); animation-duration: 24s; animation-delay: -23s; --drift: 17px;"></span>
+    <span class="snow-flake" style="left: 75%; width: 2px; height: 2px; filter: blur(1px); animation-duration: 25s; animation-delay: -1s; --drift: -18px;"></span>
+    <span class="snow-flake" style="left: 79%; width: 4px; height: 4px; filter: blur(1.5px); animation-duration: 13s; animation-delay: -4s; --drift: 19px;"></span>
+    <span class="snow-flake" style="left: 80%; width: 3px; height: 3px; filter: blur(2px); animation-duration: 14s; animation-delay: -7s; --drift: -20px;"></span>
+    <span class="snow-flake" style="left: 84%; width: 5px; height: 5px; filter: blur(2.5px); animation-duration: 15s; animation-delay: -10s; --drift: 21px;"></span>
+    <span class="snow-flake" style="left: 88%; width: 6px; height: 6px; filter: blur(3px); animation-duration: 16s; animation-delay: -13s; --drift: -22px;"></span>
+    <span class="snow-flake" style="left: 89%; width: 2px; height: 2px; filter: blur(1px); animation-duration: 17s; animation-delay: -16s; --drift: 8px;"></span>
+    <span class="snow-flake" style="left: 93%; width: 4px; height: 4px; filter: blur(1.5px); animation-duration: 18s; animation-delay: -19s; --drift: -9px;"></span>
+    <span class="snow-flake" style="left: 97%; width: 3px; height: 3px; filter: blur(2px); animation-duration: 19s; animation-delay: -22s; --drift: 10px;"></span>
+    <span class="snow-flake" style="left: 98%; width: 5px; height: 5px; filter: blur(2.5px); animation-duration: 20s; animation-delay: -25s; --drift: -11px;"></span>
+  </div>
+
   <main class="relative z-[100] flex min-h-0 w-full flex-1 flex-col">
     <div id="stage" class="relative mx-auto flex min-h-0 w-full max-w-md flex-1 flex-col gap-4 overflow-x-hidden overflow-y-auto px-4 pb-3 pt-4">
 
-    <!-- ===== Encabezado dinámico: saludo por hora + fecha compacta en dos líneas.
-         Sin logotipo, sin nombre de la app y sin nombre de usuario. ===== -->
+    <!-- Header -->
     <header>
       <p id="greeting" class="text-sm font-medium tracking-tight text-zinc-600">¡Buen día!</p>
       <time id="caracas-now" datetime="" class="mt-1 block">
@@ -452,25 +589,21 @@
       </time>
     </header>
 
-    <!-- ===== Núcleo flexible: absorbe todo el aire libre y centra las tarjetas
-         entre el encabezado (arriba) y el pie (abajo). ===== -->
     <div id="center" class="flex min-h-0 flex-1 flex-col justify-center gap-4">
 
-    <!-- ===== Cotizaciones: UN contenedor horizontal Liquid Glass (3 columnas) =====
-         Ancho = mismo contenedor que la calculadora (max-w-md / px-4).
-         Las columnas se generan desde RATE_COLUMNS en el JS (DRY). ===== -->
+    <!-- Rates -->
     <div id="rates-grid" class="rates-glass ios-liquid-glass w-full"
       role="radiogroup" aria-label="Cotizaciones: toca una tasa para usarla en la calculadora"></div>
-    <!-- ===== Calculadora: 2 tarjetas acopladas + botón ↑↓ superpuesto ===== -->
+
+    <!-- Converter -->
     <section aria-label="Calculadora de divisas" class="relative flex flex-col gap-2">
 
-      <!-- Tarjeta superior: ENVÍAS (misma estructura de 2 filas que la inferior) -->
       <div id="amount-card" class="amount-card ios-liquid-glass rounded-[20px] px-5 py-4">
-        <!-- Fila 1: divisa/tasa de origen (dinámica, arriba a la izquierda) -->
+
         <div class="flex items-center">
           <span id="currency-tag" class="currency-pill" aria-label="Dólar estadounidense (USD)"><span class="currency-code">USD</span></span>
         </div>
-        <!-- Fila 2: monto + acciones centradas en el mismo eje -->
+
         <div class="mt-1 flex items-center justify-between gap-3">
           <input id="amount" type="text" inputmode="decimal" value="1,00"
             placeholder="0,00" aria-label="Monto a convertir"
@@ -496,9 +629,6 @@
         </div>
       </div>
 
-      <!-- Botón ↑↓ superpuesto: hijo directo del flex (sin wrapper) para que el
-           gap real entre tarjetas sea exactamente 8px y el botón muerda 20px
-           cada borde de forma simétrica (48px − 8px) / 2 = 20. -->
       <button id="swap-btn" type="button" aria-label="Invertir dirección de conversión"
         class="swap-btn relative z-10 grid h-12 w-12 shrink-0 place-items-center rounded-full p-2 text-white transition-all duration-300 ease-in-out active:scale-95"
         style="margin: -28px auto;">
@@ -508,13 +638,12 @@
         <span id="direction-label" class="sr-only">USD → VES</span>
       </button>
 
-      <!-- Tarjeta inferior: RECIBES (idéntica estructura de 2 filas) -->
       <div class="result-card ios-liquid-glass rounded-[20px] px-5 py-4">
-        <!-- Fila 1: tasa activa (dinámica, arriba a la izquierda; espejo de la tarjeta superior) -->
+
         <div class="flex items-center">
           <span id="rate-tag" class="currency-pill" aria-label="Bolívar (VES)"><span class="currency-code">VES</span></span>
         </div>
-        <!-- Fila 2: resultado + acciones centradas en el mismo eje -->
+
         <div class="mt-1 flex items-center justify-between gap-3">
           <p id="result" class="w-full min-w-0 whitespace-nowrap text-right font-num text-4xl font-bold tabular-nums tracking-tight text-zinc-900 sm:text-5xl"><span class="result-ph">0,00</span></p>
           <div class="flex shrink-0 items-center gap-2">
@@ -538,27 +667,19 @@
         </div>
       </div>
 
-      <!-- Selector de tasa: ELIMINADO (segmented control inferior). La selección
-           vive SOLO en las 3 tarjetas superiores, que ya son accesibles con
-           teclado (role=radio + flechas/Espacio/Enter). Así la pantalla arranca
-           menos saturada. El JS sigue funcionando: consulta input[name="rate"]
-           de forma tolerante (NodeList vacía = sin error). -->
-
-      <!-- Badge de estado/tasa: alto contraste brutalista (Volt sobre carbón) -->
       <p id="result-detail" class="result-badge whitespace-nowrap">Cargando tasas en vivo…</p>
     </section>
 
-    </div><!-- /#center -->
+    </div>
 
     </div>
   </main>
 
-  <!-- ===== Pie: menú + instalación + © sobre el tramo final del degradado ===== -->
+  <!-- Dock -->
   <footer id="app-footer" class="relative z-[100] w-full shrink-0">
     <div class="dock">
     <div class="dock-inner relative z-[1] mx-auto w-full max-w-md px-4">
 
-    <!-- ===== Accesos rápidos: 4 círculos sobre el borgoña, Calculadora activa ===== -->
     <nav aria-label="Accesos rápidos" class="dock-nav grid grid-cols-4 gap-3">
       <button type="button" class="quick-action" aria-label="Historial de conversiones">
         <span class="quick-icon" aria-hidden="true">
@@ -605,8 +726,6 @@
       </button>
     </nav>
 
-    <!-- ===== Instalación: card de cristal sobre la base borgoña.
-         Botón BLANCO con texto rojo: el mayor contraste de la zona oscura. ===== -->
     <div id="install-banner" hidden class="mt-6">
       <div id="install-banner-inner" class="flex transform items-center gap-3 rounded-2xl border border-white/15 bg-white/10 p-4 opacity-0 translate-y-3 backdrop-blur-xl transition-all duration-300 ease-out">
         <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white/15 text-base font-black text-white select-none" aria-hidden="true">Bs</span>
@@ -630,37 +749,22 @@
     </div>
   </footer>
 
-  <!-- ==================== Lógica (Vanilla JS) ==================== -->
   <script>
 
   (() => {
     'use strict';
 
-    /* ══════════════════════════════════════════════════════════════
-     * ⚙️ CONFIGURACIÓN DE LA API — EDITA AQUÍ
-     * --------------------------------------------------------------
-    * PROXY_URL → Proxy serverless de Netlify o proxy local de server.js.
-     * ══════════════════════════════════════════════════════════════ */
-    /* ══════════════════════════════════════════════════════════════
-     * ⚙️ CONFIGURACIÓN DE FUENTES — EDITA AQUÍ
-     * --------------------------------------------------------------
-     * 1-2) Proxies con API key (Netlify en prod, server.js en local):
-     *      entregan el payload completo (USD, EUR y P2P) en una llamada.
-     * 3-4) Puentes públicos de solo lectura (sin key), consultados en
-     *      paralelo: bcv.org.ve (USD + EUR oficiales, fuente primaria)
-     *      y cotizave.com (Binance P2P, el BCV no publica P2P).
-     * ══════════════════════════════════════════════════════════════ */
     const PROXY_SOURCES = [
       { label: 'proxy-netlify', url: '/.netlify/functions/rates' },
       { label: 'proxy-local', url: './api/rates' },
     ];
+    // Rates API
     const BRIDGE_COTIZAVE = 'https://r.jina.ai/https://cotizave.com';
     const BRIDGE_BCV = 'https://r.jina.ai/https://www.bcv.org.ve/';
-    const TIMEOUT_PROXY_MS = 8000;  // proxies (JSON pequeño)
-    const TIMEOUT_BRIDGE_MS = 12000; // puentes (páginas grandes)
-    const REFRESH_MS = 5 * 60 * 1000; // refresco automático cada 5 min
+    const TIMEOUT_PROXY_MS = 8000;
+    const TIMEOUT_BRIDGE_MS = 12000;
+    const REFRESH_MS = 5 * 60 * 1000;
 
-    /* ---------- Tasas VIVAS (null = sin datos aún; nada quemado) ---------- */
     const RATES = {
       bcv: { value: null, label: 'BCV' },
       binance: { value: null, label: 'Binance' },
@@ -669,33 +773,14 @@
 
     const state = { direction: 'usd-ves', rate: 'bcv' };
 
-    /* ---------- Formato venezolano estricto: 3.650,00 ---------- */
-    /* Formato local único: puntos de miles + coma + 2 decimales. Delegado en
-       formatLocalNumber (declarada más abajo y elevada por hoisting) para no
-       tener dos implementaciones del mismo formato. */
     const fmt = (n) => formatLocalNumber(n);
 
-    /* ════════════════════════════════════════════════════════════════
-     * 💾 CACHÉ LOCAL · patrón stale-while-revalidate
-     * --------------------------------------------------------------
-     * 1. LECTURA SÍNCRONA al arrancar: la primera pintura ya lleva las
-     *    cotizaciones guardadas; nunca se ve un loader ni un guion.
-     * 2. FRESCURA: dentro del TTL (5 min) NO se hace ninguna petición.
-     * 3. REVALIDACIÓN: si la copia caducó, se pide al servidor en segundo
-     *    plano y solo se repinta si llegó algo válido (stale → fresh).
-     * 4. FALLO DE RED: la caché se conserva intacta; la UI sigue usable
-     *    con el último dato bueno y se reintenta en el siguiente ciclo.
-     * Todo acceso a localStorage va en try/catch: en modo privado o con el
-     * almacenamiento lleno la app funciona igual, solo sin caché.
-     * ════════════════════════════════════════════════════════════════ */
     const RATES_CACHE_KEY = 'tasasve:rates:v1';
-    const RATES_CACHE_TTL_MS = REFRESH_MS; // misma cadencia que el refresco (5 min)
+    const RATES_CACHE_TTL_MS = REFRESH_MS;
 
-    let cacheSavedAt = 0;     // timestamp de la copia en uso (0 = sin caché)
-    let ratesArrived = false; // true en cuanto hay datos (caché o red)
+    let cacheSavedAt = 0;
+    let ratesArrived = false;
 
-    /* Devuelve { savedAt, values } o null. Descarta caché corrupta o de
-       versiones viejas sin romper el arranque. */
     function readRatesCache() {
       try {
         const raw = localStorage.getItem(RATES_CACHE_KEY);
@@ -716,7 +801,6 @@
       }
     }
 
-    /* Persiste las tasas vigentes (solo números válidos) tras cada éxito. */
     function writeRatesCache() {
       try {
         const values = {};
@@ -731,11 +815,8 @@
       }
     }
 
-    /* Vigencia de la copia: dentro del TTL no se toca la red. */
     const isCacheFresh = () => cacheSavedAt > 0 && Date.now() - cacheSavedAt < RATES_CACHE_TTL_MS;
 
-    /* Hidratación ANTES de generar las columnas: el HTML inicial ya sale con
-       las cifras, así que no hay parpadeo ni hueco de "—". */
     const cachedRates = readRatesCache();
     if (cachedRates) {
       cacheSavedAt = cachedRates.savedAt;
@@ -743,27 +824,18 @@
       ratesArrived = true;
     }
 
-    /* ════════════════════════════════════════════════════════════════
-     * 📊 MÓDULO DE COTIZACIONES — DRY
-     * Fuente única de verdad de las 3 columnas: el HTML se genera una
-     * sola vez desde este arreglo (sin bloques repetidos ni badges).
-     * ════════════════════════════════════════════════════════════════ */
     const RATE_COLUMNS = [
       { id: 'bcv',     sigla: 'BCV', label: 'BCV oficial',  priceId: 'bcv-price' },
       { id: 'binance', sigla: 'BN',  label: 'Binance P2P',  priceId: 'bin-price' },
       { id: 'euro',    sigla: 'EU',  label: 'Euro BCV',     priceId: 'eur-price' },
     ];
 
-    /* Monto con jerarquía: "Bs." tenue + cifra protagonista.
-     * curCls/valCls permiten la misma lógica en tasas y en el resultado grande. */
     const moneyHtml = (currency, value, curCls = '', valCls = '') =>
       `<span${curCls ? ` class="${curCls}"` : ''}>${currency}</span><span${valCls ? ` class="${valCls}"` : ''}>${value}</span>`;
 
     function renderRateColumns() {
       const grid = document.getElementById('rates-grid');
       if (!grid) return;
-      // Cada columna: sigla → nombre → monto.
-      // Sin wrappers intermedios: 3 nodos por columna, todos con nowrap.
       grid.innerHTML = RATE_COLUMNS.map((c, i) => `
         <div class="rate-col" role="radio" aria-checked="${i === 0}" tabindex="${i === 0 ? 0 : -1}"
           data-rate-card="${c.id}" aria-label="Tasa ${c.label}">
@@ -774,8 +846,6 @@
     }
     renderRateColumns();
 
-    /* Repinta solo las cifras (sin reconstruir columnas ni perder foco ni
-       selección): es lo que se ejecuta al revalidar en segundo plano. */
     function updateRatePrices() {
       for (const c of RATE_COLUMNS) {
         const el = document.getElementById(c.priceId);
@@ -785,6 +855,7 @@
       }
     }
 
+    // DOM refs
     const $ = (sel) => document.querySelector(sel);
     const els = {
       amount: $('#amount'),
@@ -797,9 +868,6 @@
       rateTag: $('#rate-tag'),
     };
 
-    /* ---------- Identificador de moneda (píldora) ----------
-     * Bandera + código ISO en el mismo bloque. Fuente única de los tres casos
-     * posibles: USD, EUR y VES. Se pinta del estado, nunca desde el DOM. */
     const CURRENCY_META = {
       USD: {
         name: 'Dólar estadounidense',
@@ -822,18 +890,14 @@
       el.setAttribute('aria-label', `${meta.name} (${code})`);
     }
 
-    /* ---------- Auto-ajuste tipográfico del resultado ----------
-     * Si el monto tiene muchos dígitos, la fuente escala proporcionalmente
-     * hacia abajo hasta que la línea quepa en el contenedor glass.
-     * Nunca se rompe, salta de línea ni desborda. */
     function fitResultText() {
       const el = els.result;
       if (!el) return;
-      el.style.fontSize = ''; // vuelve al tamaño base (text-4xl / sm:text-5xl)
+      el.style.fontSize = '';
       const base = parseFloat(getComputedStyle(el).fontSize);
       if (!Number.isFinite(base)) return;
       let size = base;
-      let guard = 48; // tope de iteraciones por seguridad
+      let guard = 48;
       while (el.scrollWidth > el.clientWidth && size > 15 && guard-- > 0) {
         size -= 1.5;
         el.style.fontSize = `${size}px`;
@@ -845,12 +909,6 @@
       fitRaf = requestAnimationFrame(fitResultText);
     });
 
-    /* ════════════════════════════════════════════════════════════════
-     * 📅 ENCABEZADO DINÁMICO — saludo por hora LOCAL + fecha compacta
-     * Saludo y hora salen del MISMO cálculo (Intl 'es-VE' sobre la zona del
-     * dispositivo), así que nunca se contradicen. Formato 12 h sin cero a la
-     * izquierda: “1:17 PM”. El saludo es genérico: sin marca ni usuario.
-     * ════════════════════════════════════════════════════════════════ */
     const nowEl      = document.getElementById('caracas-now');
     const greetingEl = document.getElementById('greeting');
     const dateTextEl = document.getElementById('caracas-date-text');
@@ -859,9 +917,6 @@
     const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
     const MONTHS_SHORT = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
 
-    /* Piezas de la hora local sin depender del idioma del navegador: Intl
-       (es-VE) entrega día de la semana y números; el mes se acorta con el
-       diccionario de arriba porque Intl devuelve “nov.” con punto. */
     function localParts(d) {
       const p = {};
       for (const part of new Intl.DateTimeFormat('es-VE', {
@@ -882,14 +937,11 @@
       };
     }
 
-    /* Saludo genérico por franja horaria: 06–11 día, 12–18 tardes, resto noches. */
     const greetingFor = (hour24) =>
       hour24 >= 6 && hour24 < 12 ? '¡Buen día!'
         : hour24 >= 12 && hour24 < 19 ? '¡Buenas tardes!'
           : '¡Buenas noches!';
 
-    /* La hora se escribe en tres nodos para que los dos puntos sean el ÚNICO
-       elemento animado: “2026 • 1”, “:”, “17 PM”. */
     function renderMeta(t) {
       if (!metaEl) return;
       const colon = document.createElement('span');
@@ -899,20 +951,20 @@
       metaEl.append(`${t.year} • ${t.hour12}`, colon, `${t.minute} ${t.ampm}`);
     }
 
+    // Header clock
     function renderHeaderClock() {
       if (!dateTextEl) return;
       const now = new Date();
       const t = localParts(now);
-      dateTextEl.textContent = `${cap(t.weekday)}, ${t.day} ${t.month}`;  // “Martes, 10 Nov”
-      renderMeta(t);                                                     // “2026 • 1:17 PM”
+      dateTextEl.textContent = `${cap(t.weekday)}, ${t.day} ${t.month}`;
+      renderMeta(t);
       if (greetingEl) greetingEl.textContent = greetingFor(t.hour24);
       if (nowEl) {
-        nowEl.setAttribute('datetime', now.toISOString()); // instante real en UTC (para máquinas)
+        nowEl.setAttribute('datetime', now.toISOString());
         nowEl.setAttribute('title', `Hora local · ${Intl.DateTimeFormat().resolvedOptions().timeZone || 'zona desconocida'}`);
       }
     }
 
-    // Refresco exacto al cambiar de minuto + al volver a la pestaña (reloj dormido)
     (() => {
       const tick = () => {
         renderHeaderClock();
@@ -922,44 +974,38 @@
       document.addEventListener('visibilitychange', () => { if (!document.hidden) renderHeaderClock(); });
     })();
 
-    /* ---------- Cálculo reactivo ---------- */
+    // Reactive compute
     function compute() {
-      const amount = parseLocalNumber(els.amount.value);   // "1.250,50" → 1250.5
+      const amount = parseLocalNumber(els.amount.value);
       const rate = RATES[state.rate].value;
       const usdToVes = state.direction === 'usd-ves';
       const sourceCurrency = state.rate === 'euro' ? 'EUR' : 'USD';
 
-      // Píldoras: origen arriba, destino abajo (siempre espejo del estado)
       setCurrencyPill(els.currencyTag, usdToVes ? sourceCurrency : 'VES');
       setCurrencyPill(els.rateTag, usdToVes ? 'VES' : sourceCurrency);
 
-      // Sin datos vivos todavía: nunca se calcula con valores por defecto.
       if (!Number.isFinite(rate)) {
-        els.result.innerHTML = '<span class="result-ph">0,00</span>'; // placeholder idéntico al del input superior
-        // Si ya llegó una respuesta (aunque parcial), la tasa elegida NO existe:
-        // no queda en "cargando" eterno, se informa como no disponible.
+        els.result.innerHTML = '<span class="result-ph">0,00</span>';
         els.resultDetail.textContent = lastDetailError || (ratesArrived ? 'Tasa no disponible' : 'Cargando tasas en vivo…');
         fitResultText();
         return;
       }
 
       if (!Number.isFinite(amount) || amount < 0) {
-        els.result.innerHTML = '<span class="result-ph">0,00</span>'; // placeholder idéntico al del input superior
+        els.result.innerHTML = '<span class="result-ph">0,00</span>';
         els.resultDetail.textContent = 'Introduce un monto válido';
         fitResultText();
         return;
       }
 
       const out = usdToVes ? amount * rate : amount / rate;
-      // Visual de vuelta: el resultado y la píldora salen ya en formato local.
-      els.result.textContent = formatLocalNumber(out); // solo la cifra limpia: la etiqueta de la tarjeta ya nombra la divisa
+      els.result.textContent = formatLocalNumber(out);
       els.resultDetail.textContent =
         `${formatLocalNumber(amount)} ${usdToVes ? sourceCurrency : 'VES'} ${usdToVes ? '×' : '÷'} ${formatLocalNumber(rate)} (${RATES[state.rate].label})`;
 
       fitResultText();
     }
 
-    /* ---------- Dirección USD → VES / VES → USD ---------- */
     const COPY_SVG = `
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
         <rect x="9" y="9" width="11" height="11" rx="2"></rect>
@@ -987,31 +1033,18 @@
       return cleaned;
     }
 
-    /* ---------- Máscara del monto: visual local vs. valor de cálculo ----------
-     * El input guarda SOLO formato venezolano ("1.250,50"): coma decimal y
-     * puntos de miles que el usuario nunca teclea. El número con el que opera
-     * la calculadora sale de parseLocalNumber() y todo lo que se pinta de vuelta
-     * pasa por formatLocalNumber(). La máscara corre en 'input', así que cubre
-     * tecleo, pegado, autocompletar y dictado. */
-
-    /* De visual a JS: "1.250,50" → 1250.5 · campo vacío → NaN (no es 0). */
+    // Locale number parser
     function parseLocalNumber(str) {
       const s = String(str ?? '').trim();
       if (!s) return NaN;
       return parseFloat(s.replace(/\./g, '').replace(',', '.'));
     }
 
-    /* De JS a visual: 1250.5 → "1.250,50" (miles con punto, 2 decimales fijos). */
     function formatLocalNumber(num) {
       if (!Number.isFinite(num)) return '';
       return num.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
 
-    /* Un solo separador decimal: cualquier punto o coma, tecleado o pegado, se
-       interpreta como la coma local (teclado numérico de Windows, Mac, Android
-       e iOS). Si llegan los dos, el de más a la derecha es el decimal y el otro
-       agrupa miles ("1.234,56" y "1,234.56" → "1234,56"); si solo hay puntos y
-       forman grupos de tres, son miles ("1.234" → "1234"). */
     function unifyDecimalSeparator(raw) {
       const s = String(raw ?? '');
       const lastComma = s.lastIndexOf(',');
@@ -1023,22 +1056,18 @@
       return /^\d{1,3}(\.\d{3})+$/.test(s) ? s.replace(/\./g, '') : s.replace(/\./g, ',');
     }
 
-    /* Máscara en vivo: solo dígitos, UNA coma y como máximo 2 decimales; los
-       puntos de miles se insertan solos mientras se escribe y la parte decimal
-       se conserva intacta. */
     function maskLocalNumber(raw) {
-      const s = unifyDecimalSeparator(raw).replace(/[^\d,]/g, '');   // fuera letras y símbolos
+      const s = unifyDecimalSeparator(raw).replace(/[^\d,]/g, '');
       const comma = s.indexOf(',');
       const group = (digits) => digits.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 
       if (comma === -1) return group(s.replace(/^0+(?=\d)/, ''));
 
       const int = s.slice(0, comma).replace(/,/g, '').replace(/^0+(?=\d)/, '');
-      const dec = s.slice(comma + 1).replace(/,/g, '').slice(0, 2);    // tope: 2 decimales
+      const dec = s.slice(comma + 1).replace(/,/g, '').slice(0, 2);
       return `${group(int === '' ? '0' : int)},${dec}`;
     }
 
-    // Reescribe el campo solo si cambió algo (evita cursores/repintados inútiles).
     function normalizeAmountField() {
       const before = els.amount.value;
       const after = maskLocalNumber(before);
@@ -1052,7 +1081,7 @@
       const icon = button.querySelector('[data-copy-icon]');
       const value = target === 'amount'
         ? sanitizeNumber(els.amount.value)
-        : (els.result.querySelector('.result-ph') ? '' : sanitizeNumber(els.result.textContent)); // el placeholder "0,00" no se copia
+        : (els.result.querySelector('.result-ph') ? '' : sanitizeNumber(els.result.textContent));
 
       if (!value) {
         return;
@@ -1061,10 +1090,10 @@
       try {
         await navigator.clipboard.writeText(value);
         icon.innerHTML = CHECK_SVG;
-        button.dataset.copied = 'true';       // CSS [.ios-icon-btn[data-copied]] → esmeralda #059669
+        button.dataset.copied = 'true';
         setTimeout(() => {
           icon.innerHTML = COPY_SVG;
-          delete button.dataset.copied;       // restaura el color base del hermano (simetría exacta)
+          delete button.dataset.copied;
         }, 2000);
       } catch (error) {
         console.error('[tasasve] No se pudo copiar al portapapeles:', error);
@@ -1077,9 +1106,8 @@
 
     function updateClearButtonVisibility() {
       const raw = String(els.amount.value).trim();
-      const value = parseLocalNumber(raw);                 // "0,00" → 0, "1.250,50" → 1250.5
+      const value = parseLocalNumber(raw);
       const shouldShow = raw !== '' && !(Number.isFinite(value) && value === 0);
-      // Simetría táctil: AMBOS botones de limpiar (monto y resultado) aparecen/desaparecen juntos
       document.querySelectorAll('.clear-btn').forEach((btn) => {
         btn.style.display = shouldShow ? 'inline-flex' : 'none';
       });
@@ -1094,17 +1122,16 @@
 
     document.querySelectorAll('.clear-btn').forEach((btn) => btn.addEventListener('click', clearAmount));
 
+    // Direction swap
     function setDirection(dir) {
       state.direction = dir;
       const usdToVes = dir === 'usd-ves';
 
       els.swapLabel.textContent = usdToVes ? 'USD → VES' : 'VES → USD';
 
-      compute();   // compute() repinta las dos píldoras según la dirección
+      compute();
     }
 
-    /* ↑↓: rotación por ESTADO (suma 180° por clic) → el ícono gira por
-       completo incluso con un toque rápido, sin depender de mantener pulsado. */
     let swapRotation = 0;
     els.swapBtn.addEventListener('click', () => {
       swapRotation += 180;
@@ -1120,9 +1147,6 @@
 
       if (typeof input.setSelectionRange === 'function') {
         requestAnimationFrame(() => {
-          // Sin 'force', si el foco ya se fue durante el frame (blur justo
-          // después de teclear) no se reabre el campo: evita re-disparar el
-          // vaciado del onFocus y cualquier parpadeo del monto.
           if (!force && document.activeElement !== input) return;
           input.focus();
           input.setSelectionRange(end, end);
@@ -1133,13 +1157,6 @@
       }
     }
 
-    /* ---------- Eventos reactivos (sin recargar) ---------- */
-    /* ---------- UX del input de monto ----------
-     * onFocus: si el campo aún muestra el valor por defecto ("1,00"), se vacía
-     * para que la cantidad nueva se escriba directamente, sin borrar.
-     * onBlur: si se queda sin texto, vuelve a "1,00" para que el campo nunca
-     * quede vacío en reposo (el resultado siempre tiene un monto visible).
-     * Ambos recalcular en el acto: la tarjeta inferior jamás queda desfasada. */
     const DEFAULT_AMOUNT = '1,00';
 
     els.amount.addEventListener('focus', () => {
@@ -1160,8 +1177,6 @@
 
     els.amount.addEventListener('click', forceCursorToEnd);
 
-    /* La tarjeta superior entera enfoca el input (el cristal es el blanco
-       táctil); los botones de limpiar/copiar quedan fuera del gesto. */
     const amountCard = document.getElementById('amount-card');
     amountCard?.addEventListener('click', (event) => {
       if (event.target.closest('button')) return;
@@ -1171,38 +1186,33 @@
       forceCursorToEnd();
       updateClearButtonVisibility();
     });
-    /* Atajo anti-parpadeo: si la tecla inserta texto que no es numérico, no
-       llega a pintarse. El pegado y el dictado sí pasan y los limpia 'input'. */
+
     els.amount.addEventListener('beforeinput', (event) => {
       if (event.inputType !== 'insertText' || event.data == null) return;
       if (!/^[\d.,]+$/.test(event.data)) event.preventDefault();
     });
 
     els.amount.addEventListener('input', () => {
-      normalizeAmountField();   // limpia ANTES de calcular: compute() lee un número válido
+      normalizeAmountField();
       compute();
       forceCursorToEnd();
       updateClearButtonVisibility();
     });
 
     updateClearButtonVisibility();
-    /* ---------- Selección de tasa: fuente única de verdad ----------
-     * Las columnas del grid de cotizaciones son el ÚNICO selector. */
+
     const rateCards = Array.from(document.querySelectorAll('[data-rate-card]'));
 
+    // Rate selection
     function selectRate(rateKey, { focusCard = false } = {}) {
       state.rate = rateKey;
 
-      // Resalta la columna activa (fondo glass esmeralda) + roving tabindex
       rateCards.forEach((card) => {
         const selected = card.dataset.rateCard === rateKey;
         card.classList.toggle('rate-selected', selected);
         card.setAttribute('aria-checked', String(selected));
         card.tabIndex = selected ? 0 : -1;
       });
-
-      // 2) Las píldoras de moneda las deriva compute() del estado (dirección
-      //    + tasa), sin duplicar aquí la lógica de origen/destino.
 
       if (focusCard) {
         const active = rateCards.find((c) => c.dataset.rateCard === rateKey);
@@ -1211,13 +1221,11 @@
       compute();
     }
 
-    // Tap/clic en una columna del grid: la selecciona
     rateCards.forEach((card) => {
       card.addEventListener('click', () => {
-        if (navigator.vibrate) navigator.vibrate(8); // micro-feedback háptico (Android)
+        if (navigator.vibrate) navigator.vibrate(8);
         selectRate(card.dataset.rateCard);
       });
-      // Accesible con teclado: flechas navegan, Espacio/Enter selecciona
       card.addEventListener('keydown', (e) => {
         if (e.key === ' ' || e.key === 'Enter') {
           e.preventDefault();
@@ -1234,7 +1242,6 @@
       });
     });
 
-    /* ---------- PWA: beforeinstallprompt ---------- */
     const IS_IOS = /iphone|ipad|ipod/i.test(navigator.userAgent) ||
       (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
     const IS_STANDALONE =
@@ -1300,13 +1307,7 @@
     installDismiss.addEventListener('click', () => hideInstallBanner());
     if (IS_IOS && !IS_STANDALONE) setTimeout(() => showBanner(true), 1200);
 
-    /* ---------- API en vivo: fetch, render y refresco ---------- */
-
     async function fetchRates() {
-      /* ── Capa de red compartida (única implementación) ───────────
-       * pedirTexto: fetch con timeout + error enriquecido (status/cuerpo).
-       * pedirJSON : pedirTexto + validación de JSON (detecta SPA fallback).
-       * Todo fallo se diagnostica con pista accionable: nada en silencio. */
       const pedirTexto = async (url, { ms = TIMEOUT_BRIDGE_MS, headers } = {}) => {
         const ac = new AbortController();
         const timer = setTimeout(() => ac.abort(), ms);
@@ -1354,9 +1355,6 @@
         console.error(`[tasasve] Fuente "${label}" falló:`, err && err.message ? err.message : err, pista ? `→ ${pista}` : '');
       };
 
-      /* ── Cascada de fuentes ─────────────────────────────────────
-       * 1-2) Proxies con key (prod → dev). 3) Puentes públicos en
-       * paralelo, con fusión por mercado: gana el dato del BCV oficial. */
       const fuentesFallidas = [];
 
       for (const { label, url } of PROXY_SOURCES) {
@@ -1373,8 +1371,6 @@
         pedirTexto(BRIDGE_COTIZAVE),
       ]);
 
-      // Fusiona por mercado en un mapa: primera escritura gana.
-      // El orden de llamada garantiza prioridad BCV oficial > cotizave.
       const fusion = {};
       const tomar = (resultado, parser, label, soloMercados) => {
         if (resultado.status !== 'fulfilled') {
@@ -1401,21 +1397,15 @@
       const rates = Object.values(fusion);
       if (rates.length) return { rates };
 
-      // Ninguna fuente respondió: error explícito para el catch de loadRates
       const resumen = new Error(`Ninguna fuente de tasas respondió (${fuentesFallidas.join(' → ')}).`);
       diagnostica('resumen', resumen);
       throw resumen;
     }
 
-    /* Extrae las tasas EN VIVO del sitio oficial del BCV (vía puente de lectura):
-     *   "![Image 26](...euro-04_2.png) EUR" seguido de "**974,09309112**"
-     *   "Fecha Valor: Lunes, 21 Septiembre 2026"
-     * Devuelve USD (reference) y EUR (eur_reference) oficiales + fecha valor. */
     function parseBcvOfficial(text) {
       const num = (s) => parseFloat(String(s).replace(/\./g, '').replace(',', '.'));
       const rates = [];
 
-      // Cada moneda aparece como "IMG CÓDIGO" + valor en negrita en la línea siguiente
       const monedas = [
         { market: 'eur_reference', code: 'EUR' },
         { market: 'reference', code: 'USD' },
@@ -1431,10 +1421,6 @@
       return rates.length ? { rates } : null;
     }
 
-    /* Extrae las tasas EN VIVO del texto de cotizave.com (formato estable):
-     *   "BCV BCV oficial Vigente desde el jueves 17 de septiembre Bs.847,44"
-     *   "BN Binance P2P 17 sep · 17:17 Bs.953,60"
-     * 847,44 → miles con punto, decimales con coma. */
     function parseBridgeRates(text) {
       const num = (s) => parseFloat(s.replace(/\./g, '').replace(',', '.'));
       const rates = [];
@@ -1452,10 +1438,6 @@
       return rates.length ? { rates } : null;
     }
 
-    /* ---------- Parseo y render del payload de tasas ---------- */
-
-    /* Estado de error de conexión visible en la UI (pie de la calculadora).
-     * Se pinta en rojo suave y persiste hasta que una carga vuelva a tener éxito. */
     let lastDetailError = null;
 
     function setConnectionError(message) {
@@ -1468,7 +1450,7 @@
     }
 
     function applyRates(payload) {
-      let applied = 0; // cuántas tasas válidas aportó este payload
+      let applied = 0;
       try {
         const list = Array.isArray(payload && payload.rates) ? payload.rates : [];
         const byMarket = {};
@@ -1477,8 +1459,6 @@
         }
         const pick = (...keys) => keys.map((k) => byMarket[k]).find((r) => r && Number.isFinite(r.mid));
 
-        // Euro: market 'eur_reference' (respaldo: base 'EUR'). Optional
-        // chaining + fallback 0: la estructura puede cambiar sin colapsar.
         const eur =
           list.find((rate) => rate && rate.market === 'eur_reference') ||
           list.find((rate) => rate && rate.base === 'EUR');
@@ -1490,7 +1470,6 @@
           euro: euroRate > 0 ? { mid: euroRate, ...eur } : null,
         };
 
-        // Render uniforme de las 3 columnas en una sola pasada
         for (const [key, rate] of Object.entries(encontradas)) {
           if (!rate) continue;
           RATES[key].value = rate.mid;
@@ -1498,24 +1477,19 @@
         }
         updateRatePrices();
       } catch (err) {
-        // Requerimiento 3: un payload inesperado NUNCA debe dejar la UI colgada.
         console.error('[tasasve] Error procesando las tasas (payload inesperado):', err);
       } finally {
         ratesArrived = true;
-        clearConnectionError(); // un payload exitoso limpia cualquier error previo
-        // Solo se re-escribe la caché si el payload aportó alguna cifra válida:
-        // así un JSON vacío no "fresca" artificialmente datos viejos.
+        clearConnectionError();
         if (applied) writeRatesCache();
         if (RATES.euro.value == null) {
           console.warn('[tasasve] El payload recibido NO incluyó la tasa del Euro (market "eur_reference" / base "EUR").');
         }
-        compute(); // recalcula al instante con los datos vivos disponibles
+        compute();
       }
     }
 
-    /* Cierra el ciclo de carga SIEMPRE: éxito, error de red o payload corrupto. */
     function stopLoading() {
-      // Error de conexión activo: se muestra tal cual (estado rojo persistente)
       if (lastDetailError) {
         els.resultDetail.textContent = lastDetailError;
         return;
@@ -1523,7 +1497,7 @@
 
       const hasData = RATES.bcv.value != null || RATES.binance.value != null || RATES.euro.value != null;
       if (hasData) {
-        compute(); // repinta con el estado real ('Tasa no disponible' si faltó alguna)
+        compute();
       } else {
         els.resultDetail.textContent = 'Sin conexión con la API';
       }
@@ -1531,46 +1505,37 @@
 
     const hasAnyRate = () => RATE_COLUMNS.some((c) => Number.isFinite(RATES[c.id].value));
 
-    let inFlight = null;  // dedupe: una sola petición en vuelo
-    let lastAttempt = 0;  // anti-spam al cambiar de pestaña
+    let inFlight = null;
+    let lastAttempt = 0;
 
-    /* Revalidación (stale-while-revalidate):
-     * 1. Caché vigente → NO se toca la red (la UI ya está completa).
-     * 2. Caché caducada o inexistente → se pide en segundo plano; lo que
-     *    hay en pantalla sigue visible hasta que llega la respuesta.
-     * 3. Error de red → los datos cacheados NO se borran; se reintenta en
-     *    el siguiente ciclo o al volver a la pestaña. */
     async function loadRates({ force = false } = {}) {
       if (!force && isCacheFresh()) return;
       if (inFlight) return inFlight;
-      if (!force && Date.now() - lastAttempt < 30 * 1000) return; // anti-spam
+      if (!force && Date.now() - lastAttempt < 30 * 1000) return;
       lastAttempt = Date.now();
 
       inFlight = (async () => {
         try {
           const payload = await fetchRates();
-          applyRates(payload); // el parseo ya está protegido con try/catch/finally interno
+          applyRates(payload);
         } catch (err) {
           console.error('[tasasve] No se pudieron obtener las tasas:', err);
-          // Con datos en pantalla el error no secuestra la UI: se mantiene la caché.
           if (!hasAnyRate()) setConnectionError('Sin conexión con la API');
         } finally {
-          stopLoading(); // cierra el ciclo con o sin datos
+          stopLoading();
         }
       })().finally(() => { inFlight = null; });
 
       return inFlight;
     }
 
-    /* ---------- Arranque: render inmediato + revalidación condicional ---------- */
-    selectRate(state.rate || 'bcv'); // pinta tarjetas, píldoras y cálculo con la caché ya hidratada
-    loadRates();                      // solo hace red si la caché caducó o no existe
+    selectRate(state.rate || 'bcv');
+    loadRates();
     setInterval(loadRates, REFRESH_MS);
     document.addEventListener('visibilitychange', () => {
-      if (!document.hidden) loadRates(); // revalida al volver (si toca)
+      if (!document.hidden) loadRates();
     });
 
-    // Hook de depuración: window.__tasasVE.loadRates({ force: true })
     window.__tasasVE = { applyRates, loadRates, stopLoading, selectRate, fetchRates, RATES, readRatesCache };
   })();
   </script>
