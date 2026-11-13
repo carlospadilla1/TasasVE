@@ -9,7 +9,7 @@
  *  - Limpieza de caches antiguos al activar.
  * ============================================================ */
 
-const VERSION = 'v2.8.0'; // Paleta verde esmeralda: fondo, acentos, píldoras y botonera
+const VERSION = 'v2.9.0'; // Monto: máscara local (1.250,50) separada del parseFloat interno
 const SHELL_CACHE = `tasasve-shell-${VERSION}`;
 const DATA_CACHE = `tasasve-data-${VERSION}`;
 const ASSET_CACHE = `tasasve-assets-${VERSION}`;

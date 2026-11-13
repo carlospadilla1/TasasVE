@@ -472,8 +472,8 @@
         </div>
         <!-- Fila 2: monto + acciones centradas en el mismo eje -->
         <div class="mt-1 flex items-center justify-between gap-3">
-          <input id="amount" type="text" inputmode="decimal" value="1"
-            placeholder="0.00" aria-label="Monto a convertir"
+          <input id="amount" type="text" inputmode="decimal" value="1,00"
+            placeholder="0,00" aria-label="Monto a convertir"
             class="w-full min-w-0 bg-transparent text-right font-num text-5xl font-bold tabular-nums tracking-tight text-zinc-900 outline-none transition-all duration-300 ease-in-out placeholder:text-zinc-900/25 caret-transparent sm:text-6xl" />
           <div class="flex shrink-0 items-center gap-2">
             <button id="clear-btn" type="button" class="clear-btn ios-icon-btn ios-glass-btn ios-liquid-glass" aria-label="Limpiar monto">
@@ -670,8 +670,10 @@
     const state = { direction: 'usd-ves', rate: 'bcv' };
 
     /* ---------- Formato venezolano estricto: 3.650,00 ---------- */
-    const fmt = (n) =>
-      new Intl.NumberFormat('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
+    /* Formato local único: puntos de miles + coma + 2 decimales. Delegado en
+       formatLocalNumber (declarada más abajo y elevada por hoisting) para no
+       tener dos implementaciones del mismo formato. */
+    const fmt = (n) => formatLocalNumber(n);
 
     /* ════════════════════════════════════════════════════════════════
      * 💾 CACHÉ LOCAL · patrón stale-while-revalidate
@@ -922,7 +924,7 @@
 
     /* ---------- Cálculo reactivo ---------- */
     function compute() {
-      const amount = parseFloat(normalizeAmount(els.amount.value));
+      const amount = parseLocalNumber(els.amount.value);   // "1.250,50" → 1250.5
       const rate = RATES[state.rate].value;
       const usdToVes = state.direction === 'usd-ves';
       const sourceCurrency = state.rate === 'euro' ? 'EUR' : 'USD';
@@ -949,9 +951,10 @@
       }
 
       const out = usdToVes ? amount * rate : amount / rate;
-      els.result.textContent = fmt(out); // solo la cifra limpia: la etiqueta de la tarjeta ya nombra la divisa
+      // Visual de vuelta: el resultado y la píldora salen ya en formato local.
+      els.result.textContent = formatLocalNumber(out); // solo la cifra limpia: la etiqueta de la tarjeta ya nombra la divisa
       els.resultDetail.textContent =
-        `${fmt(amount)} ${usdToVes ? sourceCurrency : 'VES'} ${usdToVes ? '×' : '÷'} ${fmt(rate)} (${RATES[state.rate].label})`;
+        `${formatLocalNumber(amount)} ${usdToVes ? sourceCurrency : 'VES'} ${usdToVes ? '×' : '÷'} ${formatLocalNumber(rate)} (${RATES[state.rate].label})`;
 
       fitResultText();
     }
@@ -984,40 +987,61 @@
       return cleaned;
     }
 
-    /* ---------- Puerta única del monto: qué puede existir dentro del input ----------
-     * Se aplica en 'input' (cubre tecleo, pegado, autocompletar y dictado) y
-     * antes de cualquier cálculo, así parseFloat nunca recibe basura.
-     * Reglas: solo dígitos y UN punto decimal; la coma se convierte en punto
-     * (teclado numérico de Windows o iOS/Android en es-ES); si llegan coma y
-     * punto juntos, el de más a la derecha es el decimal y el otro separa miles
-     * ("1.234,56" y "1,234.56" → "1234.56"). */
-    function normalizeAmount(raw) {
-      let s = String(raw ?? '');
-      const hasComma = s.includes(',');
-      const hasDot = s.includes('.');
+    /* ---------- Máscara del monto: visual local vs. valor de cálculo ----------
+     * El input guarda SOLO formato venezolano ("1.250,50"): coma decimal y
+     * puntos de miles que el usuario nunca teclea. El número con el que opera
+     * la calculadora sale de parseLocalNumber() y todo lo que se pinta de vuelta
+     * pasa por formatLocalNumber(). La máscara corre en 'input', así que cubre
+     * tecleo, pegado, autocompletar y dictado. */
 
-      if (hasComma && hasDot) {
-        const decimal = s.lastIndexOf(',') > s.lastIndexOf('.') ? ',' : '.';
-        const thousands = decimal === ',' ? '.' : ',';
-        s = s.split(thousands).join('').replace(decimal, '.');
-      } else {
-        s = s.replace(/,/g, '.');
+    /* De visual a JS: "1.250,50" → 1250.5 · campo vacío → NaN (no es 0). */
+    function parseLocalNumber(str) {
+      const s = String(str ?? '').trim();
+      if (!s) return NaN;
+      return parseFloat(s.replace(/\./g, '').replace(',', '.'));
+    }
+
+    /* De JS a visual: 1250.5 → "1.250,50" (miles con punto, 2 decimales fijos). */
+    function formatLocalNumber(num) {
+      if (!Number.isFinite(num)) return '';
+      return num.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    /* Un solo separador decimal: cualquier punto o coma, tecleado o pegado, se
+       interpreta como la coma local (teclado numérico de Windows, Mac, Android
+       e iOS). Si llegan los dos, el de más a la derecha es el decimal y el otro
+       agrupa miles ("1.234,56" y "1,234.56" → "1234,56"); si solo hay puntos y
+       forman grupos de tres, son miles ("1.234" → "1234"). */
+    function unifyDecimalSeparator(raw) {
+      const s = String(raw ?? '');
+      const lastComma = s.lastIndexOf(',');
+      const lastDot = s.lastIndexOf('.');
+      if (lastComma !== -1 && lastDot !== -1) {
+        return lastComma > lastDot ? s.replace(/\./g, '') : s.replace(/,/g, '');
       }
+      if (lastDot === -1) return s;
+      return /^\d{1,3}(\.\d{3})+$/.test(s) ? s.replace(/\./g, '') : s.replace(/\./g, ',');
+    }
 
-      s = s.replace(/[^\d.]/g, '');   // fuera letras, signos, espacios y guiones
+    /* Máscara en vivo: solo dígitos, UNA coma y como máximo 2 decimales; los
+       puntos de miles se insertan solos mientras se escribe y la parte decimal
+       se conserva intacta. */
+    function maskLocalNumber(raw) {
+      const s = unifyDecimalSeparator(raw).replace(/[^\d,]/g, '');   // fuera letras y símbolos
+      const comma = s.indexOf(',');
+      const group = (digits) => digits.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 
-      const dot = s.indexOf('.');     // un solo punto: el primero manda
-      if (dot !== -1) {
-        s = s.slice(0, dot + 1) + s.slice(dot + 1).replace(/\./g, '');
-      }
+      if (comma === -1) return group(s.replace(/^0+(?=\d)/, ''));
 
-      return s;
+      const int = s.slice(0, comma).replace(/,/g, '').replace(/^0+(?=\d)/, '');
+      const dec = s.slice(comma + 1).replace(/,/g, '').slice(0, 2);    // tope: 2 decimales
+      return `${group(int === '' ? '0' : int)},${dec}`;
     }
 
     // Reescribe el campo solo si cambió algo (evita cursores/repintados inútiles).
     function normalizeAmountField() {
       const before = els.amount.value;
-      const after = normalizeAmount(before);
+      const after = maskLocalNumber(before);
       if (after === before) return false;
       els.amount.value = after;
       return true;
@@ -1052,7 +1076,9 @@
     });
 
     function updateClearButtonVisibility() {
-      const shouldShow = String(els.amount.value).trim() !== '' && Number(els.amount.value) !== 0;
+      const raw = String(els.amount.value).trim();
+      const value = parseLocalNumber(raw);                 // "0,00" → 0, "1.250,50" → 1250.5
+      const shouldShow = raw !== '' && !(Number.isFinite(value) && value === 0);
       // Simetría táctil: AMBOS botones de limpiar (monto y resultado) aparecen/desaparecen juntos
       document.querySelectorAll('.clear-btn').forEach((btn) => {
         btn.style.display = shouldShow ? 'inline-flex' : 'none';
@@ -1109,12 +1135,12 @@
 
     /* ---------- Eventos reactivos (sin recargar) ---------- */
     /* ---------- UX del input de monto ----------
-     * onFocus: si el campo aún muestra el valor por defecto ("1"), se vacía
+     * onFocus: si el campo aún muestra el valor por defecto ("1,00"), se vacía
      * para que la cantidad nueva se escriba directamente, sin borrar.
-     * onBlur: si se queda sin texto, vuelve a "1" para que el campo nunca
+     * onBlur: si se queda sin texto, vuelve a "1,00" para que el campo nunca
      * quede vacío en reposo (el resultado siempre tiene un monto visible).
      * Ambos recalcular en el acto: la tarjeta inferior jamás queda desfasada. */
-    const DEFAULT_AMOUNT = '1';
+    const DEFAULT_AMOUNT = '1,00';
 
     els.amount.addEventListener('focus', () => {
       if (els.amount.value.trim() === DEFAULT_AMOUNT) {
